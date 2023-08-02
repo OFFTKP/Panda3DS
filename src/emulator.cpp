@@ -422,6 +422,8 @@ bool Emulator::loadROM(const std::filesystem::path& path) {
 		success = loadNCSD(path, ROMType::NCSD);
 	else if (extension == ".cxi" || extension == ".app")
 		success = loadNCSD(path, ROMType::CXI);
+	else if (extension == ".cia")
+		success = loadCIA(path);
 	else {
 		printf("Unknown file type\n");
 		success = false;
@@ -454,6 +456,19 @@ bool Emulator::loadNCSD(const std::filesystem::path& path, ROMType type) {
 	if (loadedNCSD.entrypoint & 1) {
 		Helpers::panic("Misaligned NCSD entrypoint; should this start the CPU in Thumb mode?");
 	}
+
+	return true;
+}
+
+bool Emulator::loadCIA(const std::filesystem::path& path) {
+	romType = ROMType::CIA;
+	std::optional<CIA> opt = memory.loadCIA(aesEngine, path);
+
+	if (!opt.has_value()) {
+		return false;
+	}
+
+	loadedCIA = opt.value();
 
 	return true;
 }

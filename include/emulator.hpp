@@ -23,6 +23,7 @@ enum class ROMType {
 	ELF,
 	NCSD,
 	CXI,
+	CIA,
 };
 
 class Emulator {
@@ -68,6 +69,7 @@ class Emulator {
 	// This is currently only used for ELFs, NCSDs use the IOFile API instead
 	std::ifstream loadedELF;
 	NCSD loadedNCSD;
+	CIA loadedCIA;
 
 	std::optional<std::filesystem::path> romPath = std::nullopt;
 
@@ -93,6 +95,7 @@ class Emulator {
 
 	bool loadROM(const std::filesystem::path& path);
 	bool loadNCSD(const std::filesystem::path& path, ROMType type);
+	bool loadCIA(const std::filesystem::path& path);
 	bool loadELF(const std::filesystem::path& path);
 	bool loadELF(std::ifstream& file);
 	void initGraphicsContext();

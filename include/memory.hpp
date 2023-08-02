@@ -9,6 +9,7 @@
 #include "helpers.hpp"
 #include "handles.hpp"
 #include "loader/ncsd.hpp"
+#include "loader/cia.hpp"
 #include "services/shared_font.hpp"
 
 namespace PhysicalAddrs {
@@ -151,6 +152,7 @@ public:
 	std::optional<u32> loadELF(std::ifstream& file);
 	std::optional<NCSD> loadNCSD(Crypto::AESEngine& aesEngine, const std::filesystem::path& path);
 	std::optional<NCSD> loadCXI(Crypto::AESEngine& aesEngine, const std::filesystem::path& path);
+	std::optional<CIA> loadCIA(Crypto::AESEngine& aesEngine, const std::filesystem::path& path);
 
 	bool mapCXI(NCSD& ncsd, NCCH& cxi);
 
