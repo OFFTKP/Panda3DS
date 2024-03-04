@@ -135,7 +135,7 @@ struct GLStateManager {
 
 	void enableClipPlane(GLuint index) {
 		if (index >= clipPlaneCount) [[unlikely]] {
-			Helpers::panic("Enabled invalid clipping plane %d\n", index);
+			Helpers::panic("Enabled invalid clipping plane {}\n", index);
 		}
 
 		if ((enabledClipPlanes & (1 << index)) == 0) {
@@ -146,7 +146,7 @@ struct GLStateManager {
 
 	void disableClipPlane(GLuint index) {
 		if (index >= clipPlaneCount) [[unlikely]] {
-			Helpers::panic("Disabled invalid clipping plane %d\n", index);
+			Helpers::panic("Disabled invalid clipping plane {}\n", index);
 		}
 
 		if ((enabledClipPlanes & (1 << index)) != 0) {

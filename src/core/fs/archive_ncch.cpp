@@ -55,7 +55,7 @@ Rust::Result<ArchiveBase*, HorizonResult> NCCHArchive::openArchive(const FSPath&
 
 	const u32 mediaType = path.binary[8];
 	if (mediaType != 0)
-		Helpers::panic("NCCH archive. Tried to access a mediatype other than the NAND. Type: %d", mediaType);
+		Helpers::panic("NCCH archive. Tried to access a mediatype other than the NAND. Type: {}", mediaType);
 
 	return Ok((ArchiveBase*)this);
 }
@@ -93,11 +93,11 @@ std::optional<u32> NCCHArchive::readFile(FileSession* file, u64 offset, u32 size
 				Helpers::warn("Read from Shared Data archive 00010602");
 				return 0;
 			}
-			else Helpers::panic("[NCCH archive] Read unimplemented NAND file. ID: %08X", lowProgramID);
+			else Helpers::panic("[NCCH archive] Read unimplemented NAND file. ID: {:08X}", lowProgramID);
 		} else if (highProgramID == systemDataArchive && lowProgramID == badWordList) {
 			fileData = std::vector<u8>(std::begin(BAD_WORD_LIST_DATA), std::end(BAD_WORD_LIST_DATA));
 		} else {
-			Helpers::panic("[NCCH archive] Read from unimplemented NCCH archive file. High program ID: %08X, low ID: %08X",
+			Helpers::panic("[NCCH archive] Read from unimplemented NCCH archive file. High program ID: {:08X}, low ID: {:08X}",
 				highProgramID, lowProgramID);
 		}
 

@@ -86,7 +86,7 @@ class MyEnvironment final : public Dynarmic::A32::UserCallbacks {
 	void ExceptionRaised(u32 pc, Dynarmic::A32::Exception exception) override {
 		switch (exception) {
 			case Dynarmic::A32::Exception::UnpredictableInstruction:
-				Helpers::panic("Unpredictable instruction at pc = %08X", pc);
+				Helpers::panic("Unpredictable instruction at pc = {:08X}", pc);
 				break;
 
 			default: Helpers::panic("Fired exception oops");

@@ -145,7 +145,7 @@ void Emulator::pollScheduler() {
 			case Scheduler::EventType::UpdateTimers: kernel.pollTimers(); break;
 
 			default: {
-				Helpers::panic("Scheduler: Unimplemented event type received: %d\n", static_cast<int>(eventType));
+				Helpers::panic("Scheduler: Unimplemented event type received: {}\n", static_cast<int>(eventType));
 				break;
 			}
 		}

@@ -129,7 +129,7 @@ u8 Memory::read8(u32 vaddr) {
 			case ConfigMem::WifiMac + 4:
 			case ConfigMem::WifiMac + 5: return MACAddress[vaddr - ConfigMem::WifiMac];
 
-			default: Helpers::panic("Unimplemented 8-bit read, addr: %08X", vaddr);
+			default: Helpers::panic("Unimplemented 8-bit read, addr: {:08X}", vaddr);
 		}
 	}
 }
@@ -144,7 +144,7 @@ u16 Memory::read16(u32 vaddr) {
 	} else {
 		switch (vaddr) {
 			case ConfigMem::WifiMac + 4: return (MACAddress[5] << 8) | MACAddress[4];  // Wifi MAC: Last 2 bytes of MAC Address
-			default: Helpers::panic("Unimplemented 16-bit read, addr: %08X", vaddr);
+			default: Helpers::panic("Unimplemented 16-bit read, addr: {:08X}", vaddr);
 		}
 	}
 }
@@ -195,7 +195,7 @@ u32 Memory::read32(u32 vaddr) {
 					return *(u32*)&vram[vaddr - VirtualAddrs::VramStart];
 				}
 
-				Helpers::panic("Unimplemented 32-bit read, addr: %08X", vaddr);
+				Helpers::panic("Unimplemented 32-bit read, addr: {:08X}", vaddr);
 				break;
 		}
 	}
@@ -222,7 +222,7 @@ void Memory::write8(u32 vaddr, u8 value) {
 		}
 
 		else {
-			Helpers::panic("Unimplemented 8-bit write, addr: %08X, val: %02X", vaddr, value);
+			Helpers::panic("Unimplemented 8-bit write, addr: {:08X}, val: {:02X}", vaddr, value);
 		}
 	}
 }
@@ -235,7 +235,7 @@ void Memory::write16(u32 vaddr, u16 value) {
 	if (pointer != 0) [[likely]] {
 		*(u16*)(pointer + offset) = value;
 	} else {
-		Helpers::panic("Unimplemented 16-bit write, addr: %08X, val: %08X", vaddr, value);
+		Helpers::panic("Unimplemented 16-bit write, addr: {:08X}, val: {:08X}", vaddr, value);
 	}
 }
 
@@ -247,7 +247,7 @@ void Memory::write32(u32 vaddr, u32 value) {
 	if (pointer != 0) [[likely]] {
 		*(u32*)(pointer + offset) = value;
 	} else {
-		Helpers::panic("Unimplemented 32-bit write, addr: %08X, val: %08X", vaddr, value);
+		Helpers::panic("Unimplemented 32-bit write, addr: {:08X}, val: {:08X}", vaddr, value);
 	}
 }
 
@@ -400,7 +400,7 @@ std::optional<u32> Memory::findPaddr(u32 size) {
 u32 Memory::allocateSysMemory(u32 size) {
 	// Should never be triggered, only here as a sanity check
 	if (!isAligned(size)) {
-		Helpers::panic("Memory::allocateSysMemory: Size is not page aligned (val = %08X)", size);
+		Helpers::panic("Memory::allocateSysMemory: Size is not page aligned (val = {:08X})", size);
 	}
 
 	// We use a pretty dumb allocator for OS memory since this is not really accessible to the app and is only used internally
@@ -471,7 +471,7 @@ u8* Memory::mapSharedMemory(Handle handle, u32 vaddr, u32 myPerms, u32 otherPerm
 	}
 
 	// This should be unreachable but better safe than sorry
-	Helpers::panic("Memory::mapSharedMemory: Unknown shared memory handle %08X", handle);
+	Helpers::panic("Memory::mapSharedMemory: Unknown shared memory handle {:08X}", handle);
 	return nullptr;
 }
 

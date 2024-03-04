@@ -69,7 +69,7 @@ void Kernel::serviceSVC(u32 svc) {
 		case 0x3A: getResourceLimitCurrentValues(); break;
 		case 0x3B: getThreadContext(); break;
 		case 0x3D: outputDebugString(); break;
-		default: Helpers::panic("Unimplemented svc: %X @ %08X", svc, regs[15]); break;
+		default: Helpers::panic("Unimplemented svc: {:X} @ {:08X}", svc, regs[15]); break;
 	}
 
 	evalReschedule();
@@ -275,7 +275,7 @@ void Kernel::getProcessInfo() {
 			break;
 
 		default:
-			Helpers::panic("GetProcessInfo: unimplemented type %d", type);
+			Helpers::panic("GetProcessInfo: unimplemented type {}", type);
 	}
 
 	regs[0] = Result::Success;
@@ -347,7 +347,7 @@ void Kernel::getSystemInfo() {
 					break;
 
 				default:
-					Helpers::panic("GetSystemInfo: Unknown MemoryInformation subtype %x\n", subtype);
+					Helpers::panic("GetSystemInfo: Unknown MemoryInformation subtype {:X}\n", subtype);
 					regs[0] = Result::FailurePlaceholder;
 					break;
 			}
@@ -363,7 +363,7 @@ void Kernel::getSystemInfo() {
 					break;
 
 				default:
-					Helpers::warn("GetSystemInfo: Unknown CitraInformation subtype %x\n", subtype);
+					Helpers::warn("GetSystemInfo: Unknown CitraInformation subtype {:X}\n", subtype);
 					regs[0] = Result::FailurePlaceholder;
 					break;
 			}
@@ -380,7 +380,7 @@ void Kernel::getSystemInfo() {
 					break;
 
 				default: 
-					Helpers::warn("GetSystemInfo: Unknown PandaInformation subtype %x\n", subtype);
+					Helpers::warn("GetSystemInfo: Unknown PandaInformation subtype {:X}\n", subtype);
 					regs[0] = Result::FailurePlaceholder;
 					break;
 			}
@@ -388,7 +388,7 @@ void Kernel::getSystemInfo() {
 			break;
 		}
 
-		default: Helpers::panic("GetSystemInfo: Unknown system info type: %x (subtype: %x)\n", infoType, subtype); break;
+		default: Helpers::panic("GetSystemInfo: Unknown system info type: {:x} (subtype: {:X})\n", infoType, subtype); break;
 	}
 }
 

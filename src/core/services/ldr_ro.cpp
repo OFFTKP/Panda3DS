@@ -187,7 +187,7 @@ public:
 			if (readPointer) {
 				*(u32*)readPointer = value;
 			} else {
-				Helpers::panic("LDR_RO write to invalid address = %X\n", addr);
+				Helpers::panic("LDR_RO write to invalid address = {:X}\n", addr);
 			}
 		}
 	}
@@ -248,7 +248,7 @@ public:
 	bool patchSymbol(u32 relocationTarget, u8 patchType, u32 addend, u32 symbolOffset) {
 		switch (patchType) {
 			case RelocationPatch::RelocationPatchType::AbsoluteAddress: write32(relocationTarget, symbolOffset + addend); break;
-			default: Helpers::panic("Unhandled relocation type = %X\n", patchType);
+			default: Helpers::panic("Unhandled relocation type = {:X}\n", patchType);
 		}
 
 		return true;
@@ -443,7 +443,7 @@ public:
 				case SegmentTable::SegmentID::RODATA:
 					if (segmentOffset != 0) segmentOffset += croPointer; break;
 				default:
-					Helpers::panic("Unknown segment ID = %u", segmentID);
+					Helpers::panic("Unknown segment ID = {}", segmentID);
 			}
 
 			mem.write32(segmentTable.offset + 12 * segment + SegmentTable::Offset, segmentOffset);
@@ -466,7 +466,7 @@ public:
 				case SegmentTable::SegmentID::RODATA:
 					if (segmentOffset != 0) segmentOffset -= croPointer; break;
 				default:
-					Helpers::panic("Unknown segment ID = %u", segmentID);
+					Helpers::panic("Unknown segment ID = {}", segmentID);
 			}
 
 			mem.write32(segmentTable.offset + 12 * segment + SegmentTable::Offset, segmentOffset);
@@ -770,7 +770,7 @@ public:
 				}
 
 				if (isResolved == 0) {
-					Helpers::panic("Failed to resolve symbol %s", symbolName.c_str());
+					Helpers::panic("Failed to resolve symbol {}", symbolName.c_str());
 				}
 			}
 		}
@@ -853,7 +853,7 @@ public:
 			}
 
 			if (currentCROPointer == 0) {
-				Helpers::warn("Unable to find import module \"%s\"", importModuleName.c_str());
+				Helpers::warn("Unable to find import module \"{}\"", importModuleName.c_str());
 			}
 		}
 
@@ -1202,7 +1202,7 @@ void LDRService::handleSyncRequest(u32 messagePointer) {
 		case LDRCommands::UnloadCRO: unloadCRO(messagePointer); break;
 		case LDRCommands::LinkCRO: linkCRO(messagePointer); break;
 		case LDRCommands::LoadCRONew: loadCRO(messagePointer, true); break;
-		default: Helpers::panic("LDR::RO service requested. Command: %08X\n", command);
+		default: Helpers::panic("LDR::RO service requested. Command: {:08X}\n", command);
 	}
 }
 

@@ -257,7 +257,7 @@ class PICAShader {
 	void uploadFloatUniform(u32 word) {
 		floatUniformBuffer[floatUniformWordCount++] = word;
 		if (floatUniformIndex >= 96) {
-			Helpers::panic("[PICA] Tried to write float uniform %d", floatUniformIndex);
+			Helpers::panic("[PICA] Tried to write float uniform {}", floatUniformIndex);
 		}
 
 		if ((f32UniformTransfer && floatUniformWordCount >= 4) || (!f32UniformTransfer && floatUniformWordCount >= 3)) {

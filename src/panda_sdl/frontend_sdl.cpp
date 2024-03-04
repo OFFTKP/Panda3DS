@@ -10,7 +10,7 @@ FrontendSDL::FrontendSDL() {
 	// Make SDL use consistent positional button mapping
 	SDL_SetHint(SDL_HINT_GAMECONTROLLER_USE_BUTTON_LABELS, "0");
 	if (SDL_Init(SDL_INIT_GAMECONTROLLER) < 0) {
-		Helpers::warn("Failed to initialize SDL2 GameController: %s", SDL_GetError());
+		Helpers::warn("Failed to initialize SDL2 GameController: {}", SDL_GetError());
 	}
 
 	if (SDL_WasInit(SDL_INIT_GAMECONTROLLER)) {
@@ -38,12 +38,12 @@ FrontendSDL::FrontendSDL() {
 		window = SDL_CreateWindow("Alber", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 400, 480, SDL_WINDOW_OPENGL);
 
 		if (window == nullptr) {
-			Helpers::panic("Window creation failed: %s", SDL_GetError());
+			Helpers::panic("Window creation failed: {}", SDL_GetError());
 		}
 
 		glContext = SDL_GL_CreateContext(window);
 		if (glContext == nullptr) {
-			Helpers::panic("OpenGL context creation failed: %s", SDL_GetError());
+			Helpers::panic("OpenGL context creation failed: {}", SDL_GetError());
 		}
 
 		if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(SDL_GL_GetProcAddress))) {
@@ -56,7 +56,7 @@ FrontendSDL::FrontendSDL() {
 		window = SDL_CreateWindow("Alber", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 400, 480, SDL_WINDOW_VULKAN);
 
 		if (window == nullptr) {
-			Helpers::warn("Window creation failed: %s", SDL_GetError());
+			Helpers::warn("Window creation failed: {}", SDL_GetError());
 		}
 	}
 #endif

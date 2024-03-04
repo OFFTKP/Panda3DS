@@ -18,7 +18,7 @@ void CECDService::handleSyncRequest(u32 messagePointer) {
 		case CECDCommands::GetInfoEventHandle: getInfoEventHandle(messagePointer); break;
 		case CECDCommands::OpenAndRead: openAndRead(messagePointer); break;
 		default:
-			Helpers::panicDev("CECD service requested. Command: %08X\n", command);
+			Helpers::panicDev("CECD service requested. Command: {:08X}\n", command);
 			mem.write32(messagePointer + 4, Result::Success);
 			break;
 	}

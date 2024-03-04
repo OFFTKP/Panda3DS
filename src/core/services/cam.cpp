@@ -89,7 +89,7 @@ void CAMService::handleSyncRequest(u32 messagePointer) {
 		case CAMCommands::StartCapture: startCapture(messagePointer); break;
 
 		default:
-			Helpers::warn("Unimplemented CAM service requested. Command: %08X\n", command);
+			Helpers::warn("Unimplemented CAM service requested. Command: {:08X}\n", command);
 			mem.write32(messagePointer + 4, Result::Success);
 			break;
 	}

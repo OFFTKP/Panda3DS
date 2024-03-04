@@ -21,7 +21,7 @@ void SSLService::handleSyncRequest(u32 messagePointer) {
 	switch (command) {
 		case SSLCommands::Initialize: initialize(messagePointer); break;
 		case SSLCommands::GenerateRandomData: generateRandomData(messagePointer); break;
-		default: Helpers::panic("SSL service requested. Command: %08X\n", command);
+		default: Helpers::panic("SSL service requested. Command: {:08X}\n", command);
 	}
 }
 

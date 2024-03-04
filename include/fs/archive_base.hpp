@@ -223,13 +223,13 @@ public:
     virtual HorizonResult deleteFile(const FSPath& path) = 0;
 
     virtual Rust::Result<FormatInfo, HorizonResult> getFormatInfo(const FSPath& path) {
-        Helpers::panic("Unimplemented GetFormatInfo for %s archive", name().c_str());
+        Helpers::panic("Unimplemented GetFormatInfo for {} archive", name().c_str());
         // Return a dummy struct just to avoid the UB of not returning anything, even if we panic
         return Ok(FormatInfo{ .size = 0, .numOfDirectories = 0, .numOfFiles = 0, .duplicateData = false });
     }
 
     virtual HorizonResult createDirectory(const FSPath& path) {
-        Helpers::panic("Unimplemented CreateDirectory for %s archive", name().c_str());
+        Helpers::panic("Unimplemented CreateDirectory for {} archive", name().c_str());
         return Result::FS::AlreadyExists;
     }
 
@@ -238,16 +238,16 @@ public:
     virtual Rust::Result<ArchiveBase*, HorizonResult> openArchive(const FSPath& path) = 0;
 
     virtual Rust::Result<DirectorySession, HorizonResult> openDirectory(const FSPath& path) {
-        Helpers::panic("Unimplemented OpenDirectory for %s archive", name().c_str());
+        Helpers::panic("Unimplemented OpenDirectory for {} archive", name().c_str());
         return Err(Result::FS::FileNotFoundAlt);
     }
 
     virtual void format(const FSPath& path, const FormatInfo& info) {
-        Helpers::panic("Unimplemented Format for %s archive", name().c_str());
+        Helpers::panic("Unimplemented Format for {} archive", name().c_str());
     }
 
     virtual HorizonResult renameFile(const FSPath& oldPath, const FSPath& newPath) {
-		Helpers::panic("Unimplemented RenameFile for %s archive", name().c_str());
+		Helpers::panic("Unimplemented RenameFile for {} archive", name().c_str());
 		return Result::Success;
     }
 

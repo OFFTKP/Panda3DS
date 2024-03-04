@@ -92,7 +92,7 @@ void Kernel::handleDirectoryOperation(u32 messagePointer, Handle directory) {
 	switch (cmd) {
 		case DirectoryOps::Close: closeDirectory(messagePointer, directory); break;
 		case DirectoryOps::Read: readDirectory(messagePointer, directory); break;
-		default: Helpers::panic("Unknown directory operation: %08X", cmd);
+		default: Helpers::panic("Unknown directory operation: {:08X}", cmd);
 	}
 }
 

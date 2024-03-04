@@ -81,7 +81,7 @@ void ServiceManager::handleSyncRequest(u32 messagePointer) {
 		case Commands::GetServiceHandle: getServiceHandle(messagePointer); break;
 		case Commands::Subscribe: subscribe(messagePointer); break;
 		case Commands::Unsubscribe: unsubscribe(messagePointer); break;
-		default: Helpers::panic("Unknown \"srv:\" command: %08X", header);
+		default: Helpers::panic("Unknown \"srv:\" command: {:08X}", header);
 	}
 }
 
@@ -149,7 +149,7 @@ void ServiceManager::getServiceHandle(u32 messagePointer) {
 	if (auto search = serviceMap.find(service); search != serviceMap.end())
 		handle = search->second;
 	else
-		Helpers::panic("srv: GetServiceHandle with unknown service %s", service.c_str());
+		Helpers::panic("srv: GetServiceHandle with unknown service {}", service.c_str());
 
 	mem.write32(messagePointer, IPC::responseHeader(0x5, 1, 2));
 	mem.write32(messagePointer + 4, Result::Success);
@@ -235,6 +235,6 @@ void ServiceManager::sendCommandToService(u32 messagePointer, Handle handle) {
 		case KernelHandles::SOC: soc.handleSyncRequest(messagePointer); break;
 		case KernelHandles::SSL: ssl.handleSyncRequest(messagePointer); break;
 		case KernelHandles::Y2R: y2r.handleSyncRequest(messagePointer); break;
-		default: Helpers::panic("Sent IPC message to unknown service %08X\n Command: %08X", handle, mem.read32(messagePointer));
+		default: Helpers::panic("Sent IPC message to unknown service {:08X}\n Command: {:08X}", handle, mem.read32(messagePointer));
 	}
 }

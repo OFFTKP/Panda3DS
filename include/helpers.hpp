@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <fmt/format.h>
 
 #include "termcolor.hpp"
 
@@ -32,21 +33,15 @@ using s64 = std::int64_t;
 
 namespace Helpers {
 	template <class... Args>
-	std::string format(const std::string& fmt, Args&&... args) {
-		const int size = std::snprintf(nullptr, 0, fmt.c_str(), args...) + 1;
-		if (size <= 0) {
-			return {};
-		}
-		const auto buf = std::make_unique<char[]>(size);
-		std::snprintf(buf.get(), size, fmt.c_str(), args ...);
-		return std::string(buf.get(), buf.get() + size - 1);
+	std::string format(fmt::format_string<Args...> fmt, Args&&... args) {
+		return fmt::format(fmt, std::forward<Args>(args)...);
 	}
 
 	// Unconditional panic, unlike panicDev which does not panic on user builds
 	template <class... Args>
-	[[noreturn]] static void panic(const char* fmt, Args&&... args) {
+	[[noreturn]] static void panic(fmt::format_string<Args...> fmt, Args&&... args) {
 		std::cout << termcolor::on_red << "[FATAL] ";
-		std::printf(fmt, args...);
+		fmt::print(fmt, std::forward<Args>(args)...);
 		std::cout << termcolor::reset << "\n";
 
 		exit(1);
@@ -54,18 +49,18 @@ namespace Helpers {
 	
 #ifdef PANDA3DS_LIMITED_PANICS
 	template <class... Args>
-	static void panicDev(const char* fmt, Args&&... args) {}
+	static void panicDev(fmt::format_string<Args...> fmt, Args&&... args) {}
 #else
 	template <class... Args>
 	[[noreturn]] static void panicDev(const char* fmt, Args&&... args) {
-		panic(fmt, args...);
+		panic(fmt, std::forward<Args>(args)...);
 	}
 #endif
 
 	template <class... Args>
-	static void warn(const char* fmt, Args&&... args) {
+	static void warn(fmt::format_string<Args...> fmt, Args&&... args) {
 		std::cout << termcolor::on_red << "[Warning] ";
-		std::printf(fmt, args...);
+		fmt::print(fmt, std::forward<Args>(args)...);
 		std::cout << termcolor::reset << "\n";
 	}
 

@@ -234,7 +234,7 @@ struct KernelObject {
 
 			// This should be unreachable once we fully implement sync objects
 			default: [[unlikely]]
-                Helpers::panic("Called GetWaitList on kernel object without a waitlist (Type: %s)", getTypeName());
+                Helpers::panic("Called GetWaitList on kernel object without a waitlist (Type: {})", getTypeName());
 		}
 	}
 };

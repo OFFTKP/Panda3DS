@@ -10,7 +10,7 @@ void Texture::allocate() {
     texture.bind();
 
 #ifdef GPU_DEBUG_INFO
-	const auto name = Helpers::format("Surface %dx%d %s from 0x%08X", size.x(), size.y(), PICA::textureFormatToString(format), location);
+	const auto name = Helpers::format("Surface {}x{} {} from 0x{:08X}", size.x(), size.y(), PICA::textureFormatToString(format), location);
 	OpenGL::setObjectLabel(GL_TEXTURE, texture.handle(), name.c_str());
 #endif
 
@@ -243,7 +243,7 @@ u32 Texture::decodeTexel(u32 u, u32 v, PICA::TextureFmt fmt, std::span<const u8>
         case PICA::TextureFmt::ETC1A4: return getTexelETC(true, u, v, size.u(), data);
 
         default:
-            Helpers::panic("[Texture::DecodeTexel] Unimplemented format = %d", static_cast<int>(fmt));
+            Helpers::panic("[Texture::DecodeTexel] Unimplemented format = {}", static_cast<int>(fmt));
     }
 }
 

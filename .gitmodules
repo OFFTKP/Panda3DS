@@ -49,3 +49,6 @@
 [submodule "third_party/oaknut"]
 	path = third_party/oaknut
 	url = https://github.com/merryhime/oaknut
+[submodule "third_party/fmt"]
+	path = third_party/fmt
+	url = https://github.com/fmtlib/fmt/

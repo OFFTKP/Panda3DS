@@ -18,7 +18,7 @@ void ACTService::handleSyncRequest(u32 messagePointer) {
 		case ACTCommands::GetAccountDataBlock: getAccountDataBlock(messagePointer); break;
 		case ACTCommands::Initialize: initialize(messagePointer); break;
 		default:
-			Helpers::warn("Undocumented ACT service requested. Command: %08X", command);
+			Helpers::warn("Undocumented ACT service requested. Command: {:08X}", command);
 			mem.write32(messagePointer + 4, Result::Success);
 			break;
 	}

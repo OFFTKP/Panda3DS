@@ -61,10 +61,10 @@ void FRDService::handleSyncRequest(u32 messagePointer, FRDService::Type type) {
 			if (type == Type::A) {
 				switch (command) {
 					case FRDCommands::UpdateMii: updateMii(messagePointer); break;
-					default: Helpers::panic("FRD:A service requested. Command: %08X\n", command); break;
+					default: Helpers::panic("FRD:A service requested. Command: {:08X}\n", command); break;
 				}
 			} else {
-				Helpers::panic("FRD service requested. Command: %08X\n", command);
+				Helpers::panic("FRD service requested. Command: {:08X}\n", command);
 			}
 
 			break;

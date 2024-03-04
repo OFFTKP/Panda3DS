@@ -190,7 +190,7 @@ void ShaderEmitter::compileInstruction(const PICAShader& shaderUnit) {
 			recSGE(shaderUnit, instruction); break;
 
 		default:
-			Helpers::panic("Shader JIT: Unimplemented PICA opcode %X", opcode);
+			Helpers::panic("Shader JIT: Unimplemented PICA opcode {:X}", opcode);
 	}
 }
 
@@ -202,7 +202,7 @@ const ShaderEmitter::vec4f& ShaderEmitter::getSourceRef(const PICAShader& shader
 	else if (src <= 0x7f)
 		return shader.floatUniforms[src - 0x20];
 	else {
-		Helpers::warn("[Shader JIT] Unimplemented source value: %X\n", src);
+		Helpers::warn("[Shader JIT] Unimplemented source value: {:X}\n", src);
 		return shader.dummy;
 	}
 }
@@ -213,7 +213,7 @@ const ShaderEmitter::vec4f& ShaderEmitter::getDestRef(const PICAShader& shader, 
 	} else if (dest < 0x20) {
 		return shader.tempRegisters[dest - 0x10];
 	}
-	Helpers::panic("[Shader JIT] Unimplemented dest: %X", dest);
+	Helpers::panic("[Shader JIT] Unimplemented dest: {:X}", dest);
 }
 
 // See shader.hpp header for docs on how the swizzle and negate works
@@ -276,7 +276,7 @@ void ShaderEmitter::loadRegister(Xmm dest, const PICAShader& shader, u32 src, u3
 		}
 		
 		default:
-			Helpers::panic("[ShaderJIT]: Unimplemented source index type %d", index);
+			Helpers::panic("[ShaderJIT]: Unimplemented source index type {}", index);
 	}
 
 	// Swizzle and load register into dest, from [state pointer + rcx + offset] and apply the relevant swizzle

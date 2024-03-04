@@ -14,7 +14,7 @@ void MCU::HWCService::handleSyncRequest(u32 messagePointer) {
 	const u32 command = mem.read32(messagePointer);
 	switch (command) {
 		case HWCCommands::GetBatteryLevel: getBatteryLevel(messagePointer); break;
-		default: Helpers::panic("MCU::HWC service requested. Command: %08X\n", command);
+		default: Helpers::panic("MCU::HWC service requested. Command: {:08X}\n", command);
 	}
 }
 

@@ -60,7 +60,7 @@ void BOSSService::handleSyncRequest(u32 messagePointer) {
 		case BOSSCommands::StartTask: startTask(messagePointer); break;
 		case BOSSCommands::UnregisterStorage: unregisterStorage(messagePointer); break;
 		case BOSSCommands::UnregisterTask: unregisterTask(messagePointer); break;
-		default: Helpers::panic("BOSS service requested. Command: %08X\n", command);
+		default: Helpers::panic("BOSS service requested. Command: {:08X}\n", command);
 	}
 }
 

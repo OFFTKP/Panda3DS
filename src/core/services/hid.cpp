@@ -48,7 +48,7 @@ void HIDService::handleSyncRequest(u32 messagePointer) {
 		case HIDCommands::GetGyroscopeLowRawToDpsCoefficient: getGyroscopeCoefficient(messagePointer); break;
 		case HIDCommands::GetIPCHandles: getIPCHandles(messagePointer); break;
 		case HIDCommands::GetSoundVolume: getSoundVolume(messagePointer); break;
-		default: Helpers::panic("HID service requested. Command: %08X\n", command);
+		default: Helpers::panic("HID service requested. Command: {:08X}\n", command);
 	}
 }
 

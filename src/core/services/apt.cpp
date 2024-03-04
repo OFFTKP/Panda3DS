@@ -72,7 +72,7 @@ void APTService::handleSyncRequest(u32 messagePointer) {
 		case APTCommands::SetScreencapPostPermission: setScreencapPostPermission(messagePointer); break;
 		case APTCommands::TheSmashBrosFunction: theSmashBrosFunction(messagePointer); break;
 		default:
-			Helpers::panicDev("APT service requested. Command: %08X\n", command);
+			Helpers::panicDev("APT service requested. Command: {:08X}\n", command);
 			mem.write32(messagePointer + 4, Result::Success);
 			break;
 	}
@@ -106,7 +106,7 @@ void APTService::appletUtility(u32 messagePointer) {
 
 void APTService::getAppletInfo(u32 messagePointer) {
 	const u32 appID = mem.read32(messagePointer + 4);
-	Helpers::warn("APT::GetAppletInfo (appID = %X)\n", appID);
+	Helpers::warn("APT::GetAppletInfo (appID = {:X})\n", appID);
 
 	mem.write32(messagePointer, IPC::responseHeader(0x06, 7, 0));
 	mem.write32(messagePointer + 4, Result::Success);
@@ -118,7 +118,7 @@ void APTService::getAppletInfo(u32 messagePointer) {
 
 void APTService::isRegistered(u32 messagePointer) {
 	const u32 appID = mem.read32(messagePointer + 4);
-	Helpers::warn("APT::IsRegistered (appID = %X)", appID);
+	Helpers::warn("APT::IsRegistered (appID = {:X})", appID);
 
 	mem.write32(messagePointer, IPC::responseHeader(0x09, 2, 0));
 	mem.write32(messagePointer + 4, Result::Success);
@@ -363,7 +363,7 @@ void APTService::setApplicationCpuTimeLimit(u32 messagePointer) {
 
 	// If called with invalid parameters, the current time limit is left unchanged, and OS::NotImplemented is returned
 	if (percentage < 5 || percentage > 89 || fixed != 1) {
-		Helpers::warn("Invalid parameter passed to APT::SetApplicationCpuTimeLimit: (percentage, fixed) = (%d, %d)\n", percentage, fixed);
+		Helpers::warn("Invalid parameter passed to APT::SetApplicationCpuTimeLimit: (percentage, fixed) = ({}, {})\n", percentage, fixed);
 		mem.write32(messagePointer + 4, Result::OS::NotImplemented);
 	} else {
 		mem.write32(messagePointer + 4, Result::Success);

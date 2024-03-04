@@ -141,7 +141,7 @@ class GPU {
 
 			return *(T*)&fcram[index];
 		} else {
-			Helpers::panic("[PICA] Read unimplemented paddr %08X", paddr);
+			Helpers::panic("[PICA] Read unimplemented paddr {:08X}", paddr);
 		}
 	}
 
@@ -157,7 +157,7 @@ class GPU {
 			u32 index = paddr - PhysicalAddrs::VRAM;
 			return (T*)&vram[index];
 		} else [[unlikely]] {
-			Helpers::panic("[GPU] Tried to access unknown physical address: %08X", paddr);
+			Helpers::panic("[GPU] Tried to access unknown physical address: {:08X}", paddr);
 		}
 	}
 

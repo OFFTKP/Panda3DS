@@ -49,7 +49,7 @@ void NFCService::handleSyncRequest(u32 messagePointer) {
 		case NFCCommands::StartTagScanning: startTagScanning(messagePointer); break;
 		case NFCCommands::StopCommunication: stopCommunication(messagePointer); break;
 		case NFCCommands::StopTagScanning: stopTagScanning(messagePointer); break;
-		default: Helpers::panic("NFC service requested. Command: %08X\n", command);
+		default: Helpers::panic("NFC service requested. Command: {:08X}\n", command);
 	}
 }
 
@@ -105,7 +105,7 @@ void NFCService::shutdown(u32 messagePointer) {
 	log("MFC::Shutdown");
 	const u8 mode = mem.read8(messagePointer + 4);
 
-	Helpers::warn("NFC::Shutdown: Unimplemented mode: %d", mode);
+	Helpers::warn("NFC::Shutdown: Unimplemented mode: {}", mode);
 
 	mem.write32(messagePointer, IPC::responseHeader(0x2, 1, 0));
 	mem.write32(messagePointer + 4, Result::Success);

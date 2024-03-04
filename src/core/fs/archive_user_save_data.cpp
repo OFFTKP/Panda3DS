@@ -179,7 +179,7 @@ void UserSaveDataArchive::format(const FSPath& path, const ArchiveBase::FormatIn
 
 Rust::Result<ArchiveBase*, HorizonResult> UserSaveDataArchive::openArchive(const FSPath& path) {
 	if (path.type != PathType::Binary) {
-		Helpers::panic("Unimplemented path type for UserSaveData archive: %d\n", path.type);
+		Helpers::panic("Unimplemented path type for UserSaveData archive: {}\n", path.type);
 		return Err(Result::FS::NotFoundInvalid);
 	}
 

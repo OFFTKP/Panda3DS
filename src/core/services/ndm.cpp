@@ -29,7 +29,7 @@ void NDMService::handleSyncRequest(u32 messagePointer) {
 		case NDMCommands::ResumeScheduler: resumeScheduler(messagePointer); break;
 		case NDMCommands::SuspendDaemons: suspendDaemons(messagePointer); break;
 		case NDMCommands::SuspendScheduler: suspendScheduler(messagePointer); break;
-		default: Helpers::panic("NDM service requested. Command: %08X\n", command);
+		default: Helpers::panic("NDM service requested. Command: {:08X}\n", command);
 	}
 }
 
@@ -39,7 +39,7 @@ void NDMService::enterExclusiveState(u32 messagePointer) {
 
 	// Check that the exclusive state config is valid
 	if (state > 4) {
-		Helpers::warn("NDM::EnterExclusiveState: Invalid state %d", state);
+		Helpers::warn("NDM::EnterExclusiveState: Invalid state {}", state);
 	} else {
 		exclusiveState = static_cast<ExclusiveState>(state);
 	}

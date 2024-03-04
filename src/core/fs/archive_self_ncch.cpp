@@ -35,7 +35,7 @@ FileDescriptor SelfNCCHArchive::openFile(const FSPath& path, const FilePerms& pe
 	// We currently only know how to read from an NCCH's RomFS, ie type = 0
 	const u32 type = *(u32*)&path.binary[0]; // TODO: Get rid of UB here
 	if (type != PathType::RomFS && type != PathType::ExeFS && type != PathType::UpdateRomFS) {
-		Helpers::panic("Read from NCCH's non-RomFS & non-exeFS section! Path type: %d", type);
+		Helpers::panic("Read from NCCH's non-RomFS & non-exeFS section! Path type: {}", type);
 	}
 
 	return NoFile; // No file descriptor needed for RomFS
@@ -43,7 +43,7 @@ FileDescriptor SelfNCCHArchive::openFile(const FSPath& path, const FilePerms& pe
 
 Rust::Result<ArchiveBase*, HorizonResult> SelfNCCHArchive::openArchive(const FSPath& path) {
 	if (path.type != PathType::Empty) {
-		Helpers::panic("Invalid path type for SelfNCCH archive: %d\n", path.type);
+		Helpers::panic("Invalid path type for SelfNCCH archive: {}\n", path.type);
 		return Err(Result::FS::NotFoundInvalid);
 	}
 

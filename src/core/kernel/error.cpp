@@ -26,7 +26,7 @@ void Kernel::handleErrorSyncRequest(u32 messagePointer) {
 			break;
 
 		default:
-			Helpers::panic("Unimplemented err:f command %08X\n", cmd);
+			Helpers::panic("Unimplemented err:f command {:08X}\n", cmd);
 			break;
 	}
 }

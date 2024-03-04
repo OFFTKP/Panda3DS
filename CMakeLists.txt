@@ -90,6 +90,8 @@ include_directories(third_party/glm)
 
 add_subdirectory(third_party/cmrc)
 
+add_subdirectory(third_party/fmt)
+
 set(BOOST_ROOT "${CMAKE_SOURCE_DIR}/third_party/boost")
 set(Boost_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/third_party/boost")
 set(Boost_NO_SYSTEM_PATHS ON)
@@ -419,7 +421,7 @@ if(ENABLE_LTO OR ENABLE_USER_BUILD)
     set_target_properties(Alber PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
 endif()
 
-target_link_libraries(Alber PRIVATE dynarmic cryptopp glad resources_console_fonts)
+target_link_libraries(Alber PRIVATE dynarmic cryptopp glad resources_console_fonts fmt::fmt)
 
 if(NOT ANDROID)
     target_link_libraries(Alber PRIVATE SDL2-static)

@@ -74,7 +74,7 @@ void PICAShader::run() {
 				break;
 			}
 
-			default: Helpers::panic("Unimplemented PICA instruction %08X (Opcode = %02X)", instruction, opcode);
+			default: Helpers::panic("Unimplemented PICA instruction {:08X} (Opcode = {:02X})", instruction, opcode);
 		}
 
 		// Handle control flow statements. The ordering is important as the priority goes: LOOP > IF > CALL
@@ -137,7 +137,7 @@ PICAShader::vec4f PICAShader::getSource(u32 source) {
 	else if (source <= 0x7f)
 		return floatUniforms[source - 0x20];
 	else {
-		Helpers::warn("[PICA] Unimplemented source value: %X\n", source);
+		Helpers::warn("[PICA] Unimplemented source value: {:X}\n", source);
 		return vec4f({f24::zero(), f24::zero(), f24::zero(), f24::zero()});
 	}
 }
@@ -148,7 +148,7 @@ PICAShader::vec4f& PICAShader::getDest(u32 dest) {
 	} else if (dest < 0x20) {
 		return tempRegisters[dest - 0x10];
 	}
-	Helpers::panic("[PICA] Unimplemented dest: %X", dest);
+	Helpers::panic("[PICA] Unimplemented dest: {:X}", dest);
 }
 
 bool PICAShader::isCondTrue(u32 instruction) {

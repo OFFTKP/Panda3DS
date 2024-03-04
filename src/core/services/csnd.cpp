@@ -28,7 +28,7 @@ void CSNDService::handleSyncRequest(u32 messagePointer) {
 		case CSNDCommands::Initialize: initialize(messagePointer); break;
 
 		default:
-			Helpers::warn("Unimplemented CSND service requested. Command: %08X\n", command);
+			Helpers::warn("Unimplemented CSND service requested. Command: {:08X}\n", command);
 			mem.write32(messagePointer + 4, Result::Success);
 			break;
 	}

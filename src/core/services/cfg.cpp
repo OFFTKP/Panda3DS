@@ -44,10 +44,10 @@ void CFGService::handleSyncRequest(u32 messagePointer, CFGService::Type type) {
 					case CFGCommands::GetConfigInfoBlk8: getConfigInfoBlk8(messagePointer); break;
 					case CFGCommands::GetLocalFriendCodeSeed: getLocalFriendCodeSeed(messagePointer); break;
 					case CFGCommands::SecureInfoGetByte101: secureInfoGetByte101(messagePointer); break;
-					default: Helpers::panic("CFG:S service requested. Command: %08X\n", command);
+					default: Helpers::panic("CFG:S service requested. Command: {:08X}\n", command);
 				}
 			} else {
-				Helpers::panic("CFG service requested. Command: %08X\n", command);
+				Helpers::panic("CFG service requested. Command: {:08X}\n", command);
 			}
 
 			break;
@@ -161,7 +161,7 @@ void CFGService::getConfigInfo(u32 output, u32 blockID, u32 size, u32 permission
 	} else if (size == 8 && blockID == 0x00090000) {
 		mem.write64(output, 0);  // Some sort of key used with nwm::UDS::InitializeWithVersion
 	} else {
-		Helpers::panic("Unhandled GetConfigInfoBlk2 configuration. Size = %d, block = %X", size, blockID);
+		Helpers::panic("Unhandled GetConfigInfoBlk2 configuration. Size = {}, block = {:X}", size, blockID);
 	}
 }
 
@@ -238,7 +238,7 @@ void CFGService::getCountryCodeID(u32 messagePointer) {
 	}
 	
 	else {
-		Helpers::warn("CFG::GetCountryCodeID: Invalid country code %X", characterCode);
+		Helpers::warn("CFG::GetCountryCodeID: Invalid country code {:X}", characterCode);
 		mem.write32(messagePointer + 4, Result::CFG::NotFound);
 		mem.write16(messagePointer + 8, 0xFF);
 	}

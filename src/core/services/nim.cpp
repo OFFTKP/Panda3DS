@@ -13,7 +13,7 @@ void NIMService::handleSyncRequest(u32 messagePointer) {
 	const u32 command = mem.read32(messagePointer);
 	switch (command) {
 		case NIMCommands::Initialize: initialize(messagePointer); break;
-		default: Helpers::panic("NIM service requested. Command: %08X\n", command);
+		default: Helpers::panic("NIM service requested. Command: {:08X}\n", command);
 	}
 }
 

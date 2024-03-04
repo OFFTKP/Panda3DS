@@ -34,7 +34,7 @@ void IRUserService::handleSyncRequest(u32 messagePointer) {
 		case IRUserCommands::InitializeIrnopShared: initializeIrnopShared(messagePointer); break;
 		case IRUserCommands::RequireConnection: requireConnection(messagePointer); break;
 		case IRUserCommands::SendIrnop: sendIrnop(messagePointer); break;
-		default: Helpers::panic("ir:USER service requested. Command: %08X\n", command);
+		default: Helpers::panic("ir:USER service requested. Command: {:08X}\n", command);
 	}
 }
 

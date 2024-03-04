@@ -260,7 +260,7 @@ void Kernel::acquireSyncObject(KernelObject* object, const Thread& thread) {
 			break;
 		}
 
-		default: Helpers::panic("Acquiring unimplemented sync object %s", object->getTypeName());
+		default: Helpers::panic("Acquiring unimplemented sync object {}", object->getTypeName());
 	}
 }
 
@@ -392,7 +392,7 @@ void Kernel::createThread() {
 		initialSP, arg, priority, id);
 
 	if (priority > 0x3F) [[unlikely]] {
-		Helpers::panic("Created thread with bad priority value %X", priority);
+		Helpers::panic("Created thread with bad priority value {:X}", priority);
 		regs[0] = Result::OS::OutOfRange;
 		return;
 	}
@@ -673,7 +673,7 @@ bool Kernel::shouldWaitOnObject(KernelObject* object) {
 			return object->getData<Semaphore>()->availableCount <= 0;
 
 		default:
-			Helpers::panic("Not sure whether to wait on object (type: %s)", object->getTypeName());
+			Helpers::panic("Not sure whether to wait on object (type: {})", object->getTypeName());
 			return true;
 	}
 }

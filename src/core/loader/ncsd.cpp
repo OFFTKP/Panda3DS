@@ -18,7 +18,7 @@ bool Memory::mapCXI(NCSD& ncsd, NCCH& cxi) {
 	printf("Console region autodetected to: %s\n", regionNames[static_cast<size_t>(region)]);
 
 	if (!isAligned(cxi.stackSize)) {
-		Helpers::warn("CXI has a suspicious stack size of %08X which is not a multiple of 4KB", cxi.stackSize);
+		Helpers::warn("CXI has a suspicious stack size of {:08X} which is not a multiple of 4KB", cxi.stackSize);
 	}
 
 	// Round up the size of the CXI stack size to a page (4KB) boundary, as the OS can only allocate memory this way
@@ -26,7 +26,7 @@ bool Memory::mapCXI(NCSD& ncsd, NCCH& cxi) {
 
 	if (stackSize > 512_KB) {
 		// TODO: Figure out the actual max stack size
-		Helpers::warn("CXI stack size is %08X which seems way too big. Clamping to 512KB", stackSize);
+		Helpers::warn("CXI stack size is {:08X} which seems way too big. Clamping to 512KB", stackSize);
 		stackSize = 512_KB;
 	}
 

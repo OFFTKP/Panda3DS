@@ -79,7 +79,7 @@ FileDescriptor SDMCArchive::openFile(const FSPath& path, const FilePerms& perms)
 			p += fs::path(path.utf16_string).make_preferred();
 			break;
 
-		default: Helpers::panic("SDMCArchive::OpenFile: Failed. Path type: %d", path.type); return FileError;
+		default: Helpers::panic("SDMCArchive::OpenFile: Failed. Path type: {}", path.type); return FileError;
 	}
 
 	const char* permString = perms.write() ? "r+b" : "rb";
@@ -121,7 +121,7 @@ HorizonResult SDMCArchive::createDirectory(const FSPath& path) {
 			p += fs::path(path.utf16_string).make_preferred();
 			break;
 
-		default: Helpers::panic("SDMCArchive::CreateDirectory: Failed. Path type: %d", path.type); return Result::FailurePlaceholder;
+		default: Helpers::panic("SDMCArchive::CreateDirectory: Failed. Path type: {}", path.type); return Result::FailurePlaceholder;
 	}
 
 	if (fs::is_directory(p)) {

@@ -94,7 +94,7 @@ void Y2RService::handleSyncRequest(u32 messagePointer) {
 		// Intentionally break ordering a bit for less-used Y2R functions
 		case Y2RCommands::SetCoefficientParams: setCoefficientParams(messagePointer); break;
 		case Y2RCommands::GetCoefficientParams: getCoefficientParams(messagePointer); break;
-		default: Helpers::panic("Y2R service requested. Command: %08X\n", command);
+		default: Helpers::panic("Y2R service requested. Command: {:08X}\n", command);
 	}
 }
 
@@ -322,7 +322,7 @@ void Y2RService::setStandardCoeff(u32 messagePointer) {
 	mem.write32(messagePointer, IPC::responseHeader(0x20, 1, 0));
 
 	if (coeff > 3) { // Invalid coefficient, should have an error code
-		Helpers::panic("Y2R: Invalid standard coefficient (coefficient = %d)\n", coeff);
+		Helpers::panic("Y2R: Invalid standard coefficient (coefficient = {})\n", coeff);
 	}
 
 	else {
@@ -336,7 +336,7 @@ void Y2RService::getStandardCoefficientParams(u32 messagePointer) {
 	log("Y2R::GetStandardCoefficientParams (coefficient = %d)\n", coefficientIndex);
 
 	if (coefficientIndex > 3) {  // Invalid coefficient, should have an error code
-		Helpers::panic("Y2R: Invalid standard coefficient (coefficient = %d)\n", coefficientIndex);
+		Helpers::panic("Y2R: Invalid standard coefficient (coefficient = {})\n", coefficientIndex);
 	} else {
 		mem.write32(messagePointer, IPC::responseHeader(0x21, 5, 0));
 		mem.write32(messagePointer + 4, Result::Success);

@@ -100,7 +100,7 @@ ArchiveBase* FSService::getArchiveFromID(u32 id, const FSPath& archivePath) {
 		case ArchiveID::SDMCWriteOnly: return &sdmcWriteOnly;
 		case ArchiveID::SavedataAndNcch: return &ncch; // This can only access NCCH outside of FSPXI
 		default:
-			Helpers::panic("Unknown archive. ID: %d\n", id);
+			Helpers::panic("Unknown archive. ID: {}\n", id);
 			return nullptr;
 	}
 }
@@ -136,7 +136,7 @@ Rust::Result<Handle, Result::HorizonResult> FSService::openArchiveHandle(u32 arc
 	ArchiveBase* archive = getArchiveFromID(archiveID, path);
 
 	if (archive == nullptr) [[unlikely]] {
-		Helpers::panic("OpenArchive: Tried to open unknown archive %d.", archiveID);
+		Helpers::panic("OpenArchive: Tried to open unknown archive {}.", archiveID);
 		return Err(Result::FS::NotFormatted);
 	}
 
@@ -197,7 +197,7 @@ void FSService::handleSyncRequest(u32 messagePointer) {
 		case FSCommands::SetThisSaveDataSecureValue: setThisSaveDataSecureValue(messagePointer); break;
 		case FSCommands::AbnegateAccessRight: abnegateAccessRight(messagePointer); break;
 		case FSCommands::TheGameboyVCFunction: theGameboyVCFunction(messagePointer); break;
-		default: Helpers::panic("FS service requested. Command: %08X\n", command);
+		default: Helpers::panic("FS service requested. Command: {:08X}\n", command);
 	}
 }
 
@@ -355,7 +355,7 @@ void FSService::openFileDirectly(u32 messagePointer) {
 	ArchiveBase* archive = getArchiveFromID(archiveID, archivePath);
 
 	if (archive == nullptr) [[unlikely]] {
-		Helpers::panic("OpenFileDirectly: Tried to open unknown archive %d.", archiveID);
+		Helpers::panic("OpenFileDirectly: Tried to open unknown archive {}.", archiveID);
 	}
 	auto filePath = readPath(filePathType, filePathPointer, filePathSize);
 	const FilePerms perms(openFlags);
@@ -447,7 +447,7 @@ void FSService::getFormatInfo(u32 messagePointer) {
 
 	ArchiveBase* archive = getArchiveFromID(archiveID, path);
 	if (archive == nullptr) [[unlikely]] {
-		Helpers::panic("OpenArchive: Tried to open unknown archive %d.", archiveID);
+		Helpers::panic("OpenArchive: Tried to open unknown archive {}.", archiveID);
 	}
 
 	mem.write32(messagePointer, IPC::responseHeader(0x845, 5, 0));
@@ -588,7 +588,7 @@ void FSService::controlArchive(u32 messagePointer) {
 			break;
 
 		default:
-			Helpers::panic("Unimplemented action for ControlArchive (action = %X)\n", action);
+			Helpers::panic("Unimplemented action for ControlArchive (action = {:X})\n", action);
 			break;
 	}
 }

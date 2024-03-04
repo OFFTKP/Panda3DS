@@ -82,7 +82,7 @@ void Kernel::signalTimer(Handle timerHandle, Timer* timer) {
 void Kernel::svcCreateTimer() {
 	const u32 resetType = regs[1];
 	if (resetType > 2) {
-		Helpers::panic("Invalid reset type for event %d", resetType);
+		Helpers::panic("Invalid reset type for event {}", resetType);
 	}
 
 	// Have a warning here until our timers don't suck
@@ -103,7 +103,7 @@ void Kernel::svcSetTimer() {
 	KernelObject* object = getObject(handle, KernelObjectType::Timer);
 
 	if (object == nullptr) {
-		Helpers::panic("Tried to set non-existent timer %X\n", handle);
+		Helpers::panic("Tried to set non-existent timer {:X}\n", handle);
 		regs[0] = Result::Kernel::InvalidHandle;
 	}
 
@@ -132,7 +132,7 @@ void Kernel::svcClearTimer() {
 	KernelObject* object = getObject(handle, KernelObjectType::Timer);
 
 	if (object == nullptr) {
-		Helpers::panic("Tried to clear non-existent timer %X\n", handle);
+		Helpers::panic("Tried to clear non-existent timer {:X}\n", handle);
 		regs[0] = Result::Kernel::InvalidHandle;
 	} else {
 		object->getData<Timer>()->fired = false;
@@ -146,7 +146,7 @@ void Kernel::svcCancelTimer() {
 	KernelObject* object = getObject(handle, KernelObjectType::Timer);
 
 	if (object == nullptr) {
-		Helpers::panic("Tried to cancel non-existent timer %X\n", handle);
+		Helpers::panic("Tried to cancel non-existent timer {:X}\n", handle);
 		regs[0] = Result::Kernel::InvalidHandle;
 	} else {
 		cancelTimer(object->getData<Timer>());

@@ -125,6 +125,6 @@ void Kernel::sendSyncRequest() {
 		handleErrorSyncRequest(messagePointer);
 	} else {
 		const auto portData = objects[portHandle].getData<Port>();
-		Helpers::panic("SendSyncRequest targetting port %s\n", portData->name);
+		Helpers::panic("SendSyncRequest targetting port {}\n", portData->name);
 	}
 }

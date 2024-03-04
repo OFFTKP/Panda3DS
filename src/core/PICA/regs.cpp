@@ -31,7 +31,7 @@ u32 GPU::readExternalReg(u32 index) {
 	using namespace PICA::ExternalRegs;
 
 	if (index > 0x1000) [[unlikely]] {
-		Helpers::panic("Tried to read invalid external GPU register. Index: %X\n", index);
+		Helpers::panic("Tried to read invalid external GPU register. Index: {:X}\n", index);
 		return -1;
 	}
 
@@ -42,7 +42,7 @@ void GPU::writeExternalReg(u32 index, u32 value) {
 	using namespace PICA::ExternalRegs;
 
 	if (index > 0x1000) [[unlikely]] {
-		Helpers::panic("Tried to write to invalid external GPU register. Index: %X, value: %08X\n", index, value);
+		Helpers::panic("Tried to write to invalid external GPU register. Index: {:X}, value: {:08X}\n", index, value);
 		return;
 	}
 
@@ -53,7 +53,7 @@ u32 GPU::readInternalReg(u32 index) {
 	using namespace PICA::InternalRegs;
 
 	if (index > regNum) [[unlikely]] {
-		Helpers::panic("Tried to read invalid GPU register. Index: %X\n", index);
+		Helpers::panic("Tried to read invalid GPU register. Index: {:X}\n", index);
 		return 0;
 	}
 
@@ -80,7 +80,7 @@ void GPU::writeInternalReg(u32 index, u32 value, u32 mask) {
 	using namespace PICA::InternalRegs;
 
 	if (index > regNum) [[unlikely]] {
-		Helpers::panic("Tried to write to invalid GPU register. Index: %X, value: %08X\n", index, value);
+		Helpers::panic("Tried to write to invalid GPU register. Index: {:X}, value: {:08X}\n", index, value);
 		return;
 	}
 

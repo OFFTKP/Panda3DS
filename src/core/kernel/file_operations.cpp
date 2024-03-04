@@ -26,7 +26,7 @@ void Kernel::handleFileOperation(u32 messagePointer, Handle file) {
 		case FileOps::SetSize: setFileSize(messagePointer, file); break;
 		case FileOps::SetPriority: setFilePriority(messagePointer, file); break;
 		case FileOps::Write: writeFile(messagePointer, file); break;
-		default: Helpers::panic("Unknown file operation: %08X", cmd);
+		default: Helpers::panic("Unknown file operation: {:08X}", cmd);
 	}
 }
 

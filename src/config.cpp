@@ -28,7 +28,7 @@ void EmulatorConfig::load() {
 	try {
 		data = toml::parse(path);
 	} catch (std::exception& ex) {
-		Helpers::warn("Got exception trying to load config file. Exception: %s\n", ex.what());
+		Helpers::warn("Got exception trying to load config file. Exception: {}\n", ex.what());
 		return;
 	}
 
@@ -54,7 +54,7 @@ void EmulatorConfig::load() {
 			if (configRendererType.has_value()) {
 				rendererType = configRendererType.value();
 			} else {
-				Helpers::warn("Invalid renderer specified: %s\n", rendererName.c_str());
+				Helpers::warn("Invalid renderer specified: {}\n", rendererName.c_str());
 				rendererType = RendererType::OpenGL;
 			}
 
@@ -95,12 +95,12 @@ void EmulatorConfig::save() {
 		try {
 			data = toml::parse<toml::preserve_comments>(path);
 		} catch (const std::exception& ex) {
-			Helpers::warn("Exception trying to parse config file. Exception: %s\n", ex.what());
+			Helpers::warn("Exception trying to parse config file. Exception: {}\n", ex.what());
 			return;
 		}
 	} else {
 		if (error) {
-			Helpers::warn("Filesystem error accessing %s (error: %s)\n", path.string().c_str(), error.message().c_str());
+			Helpers::warn("Filesystem error accessing {} (error: {})\n", path.string().c_str(), error.message().c_str());
 		}
 		printf("Saving new configuration file %s\n", path.string().c_str());
 	}

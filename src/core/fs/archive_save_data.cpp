@@ -194,7 +194,7 @@ void SaveDataArchive::format(const FSPath& path, const ArchiveBase::FormatInfo& 
 
 Rust::Result<ArchiveBase*, HorizonResult> SaveDataArchive::openArchive(const FSPath& path) {
 	if (path.type != PathType::Empty) {
-		Helpers::panic("Unimplemented path type for SaveData archive: %d\n", path.type);
+		Helpers::panic("Unimplemented path type for SaveData archive: {}\n", path.type);
 		return Err(Result::FS::NotFoundInvalid);
 	}
 

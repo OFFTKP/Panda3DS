@@ -45,7 +45,7 @@ void MICService::handleSyncRequest(u32 messagePointer) {
 		case MICCommands::StopSampling: stopSampling(messagePointer); break;
 		case MICCommands::UnmapSharedMem: unmapSharedMem(messagePointer); break;
 		case MICCommands::CaptainToadFunction: theCaptainToadFunction(messagePointer); break;
-		default: Helpers::panic("MIC service requested. Command: %08X\n", command);
+		default: Helpers::panic("MIC service requested. Command: {:08X}\n", command);
 	}
 }
 

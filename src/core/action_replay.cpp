@@ -57,7 +57,7 @@ u32 ActionReplay::read32(u32 addr) { return mem.read32(addr); }
 			if (pointerRead) {                                                            \
 				*(u##size*)pointerRead = value;                                           \
 			} else {                                                                      \
-				Helpers::warn("AR code tried to write to invalid address: %08X\n", addr); \
+				Helpers::warn("AR code tried to write to invalid address: {:08X}\n", addr); \
 			}                                                                             \
 		}                                                                                 \
 	}
@@ -131,7 +131,7 @@ void ActionReplay::runInstruction(const Cheat& cheat, u32 instruction) {
 		}
 
 		case 0xD: executeDType(cheat, instruction); break;
-		default: Helpers::panic("Unimplemented ActionReplay instruction type %X", type); break;
+		default: Helpers::panic("Unimplemented ActionReplay instruction type {:X}", type); break;
 	}
 }
 
@@ -199,7 +199,7 @@ void ActionReplay::executeDType(const Cheat& cheat, u32 instruction) {
 				case 0x00020000: storage1 = data1; break;
 				case 0x00020001: storage2 = data2; break;
 				default:
-					Helpers::warn("Unknown ActionReplay data operation: %08X", subopcode);
+					Helpers::warn("Unknown ActionReplay data operation: {:08X}", subopcode);
 					running = false;
 					break;
 			}
@@ -215,12 +215,12 @@ void ActionReplay::executeDType(const Cheat& cheat, u32 instruction) {
 					loopStackIndex = 0;
 					ifStackIndex = 0;
 					break;
-				default: Helpers::panic("Unknown ActionReplay control flow operation: %08X", subopcode); break;
+				default: Helpers::panic("Unknown ActionReplay control flow operation: {:08X}", subopcode); break;
 			}
 			break;
 		}
 
-		default: Helpers::panic("ActionReplay: Unimplemented d-type opcode: %08X", instruction); break;
+		default: Helpers::panic("ActionReplay: Unimplemented d-type opcode: {:08X}", instruction); break;
 	}
 }
 

@@ -13,7 +13,7 @@ void DlpSrvrService::handleSyncRequest(u32 messagePointer) {
 	const u32 command = mem.read32(messagePointer);
 	switch (command) {
 		case DlpSrvrCommands::IsChild: isChild(messagePointer); break;
-		default: Helpers::panic("DLP::SRVR service requested. Command: %08X\n", command);
+		default: Helpers::panic("DLP::SRVR service requested. Command: {:08X}\n", command);
 	}
 }
 

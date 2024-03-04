@@ -47,7 +47,7 @@ static vk::UniqueShaderModule createShaderModule(vk::Device device, std::span<co
 	if (auto createResult = device.createShaderModuleUnique(shaderModuleInfo); createResult.result == vk::Result::eSuccess) {
 		shaderModule = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating shader module: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating shader module: {}\n", vk::to_string(createResult.result).c_str());
 	}
 	return shaderModule;
 }
@@ -73,7 +73,7 @@ std::tuple<vk::UniquePipeline, vk::UniquePipelineLayout> createGraphicsPipeline(
 	if (auto createResult = device.createPipelineLayoutUnique(graphicsPipelineLayoutInfo); createResult.result == vk::Result::eSuccess) {
 		graphicsPipelineLayout = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating pipeline layout: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating pipeline layout: {}\n", vk::to_string(createResult.result).c_str());
 		return {};
 	}
 
@@ -199,7 +199,7 @@ std::tuple<vk::UniquePipeline, vk::UniquePipelineLayout> createGraphicsPipeline(
 	if (auto createResult = device.createGraphicsPipelineUnique({}, renderPipelineInfo); createResult.result == vk::Result::eSuccess) {
 		pipeline = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating graphics pipeline: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating graphics pipeline: {}\n", vk::to_string(createResult.result).c_str());
 		return {};
 	}
 
@@ -287,7 +287,7 @@ RendererVK::Texture& RendererVK::getColorRenderTexture(u32 addr, PICA::ColorFmt 
 	if (auto createResult = device->createImageUnique(textureInfo); createResult.result == vk::Result::eSuccess) {
 		newTexture.image = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating color render-texture image: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating color render-texture image: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	Vulkan::setObjectName(
@@ -305,13 +305,13 @@ RendererVK::Texture& RendererVK::getColorRenderTexture(u32 addr, PICA::ColorFmt 
 		result == vk::Result::eSuccess) {
 		newTexture.imageMemory = std::move(imageMemory);
 	} else {
-		Helpers::panic("Error allocating color render-texture memory: %s\n", vk::to_string(result).c_str());
+		Helpers::panic("Error allocating color render-texture memory: {}\n", vk::to_string(result).c_str());
 	}
 
 	if (auto createResult = device->createImageViewUnique(viewInfo); createResult.result == vk::Result::eSuccess) {
 		newTexture.imageView = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating color render-texture: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating color render-texture: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	// Initial layout transition
@@ -360,7 +360,7 @@ RendererVK::Texture& RendererVK::getDepthRenderTexture(u32 addr, PICA::DepthFmt 
 	if (auto createResult = device->createImageUnique(textureInfo); createResult.result == vk::Result::eSuccess) {
 		newTexture.image = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating depth render-texture image: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating depth render-texture image: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	Vulkan::setObjectName(
@@ -379,13 +379,13 @@ RendererVK::Texture& RendererVK::getDepthRenderTexture(u32 addr, PICA::DepthFmt 
 		result == vk::Result::eSuccess) {
 		newTexture.imageMemory = std::move(imageMemory);
 	} else {
-		Helpers::panic("Error allocating depth render-texture memory: %s\n", vk::to_string(result).c_str());
+		Helpers::panic("Error allocating depth render-texture memory: {}\n", vk::to_string(result).c_str());
 	}
 
 	if (auto createResult = device->createImageViewUnique(viewInfo); createResult.result == vk::Result::eSuccess) {
 		newTexture.imageView = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating depth render-texture: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating depth render-texture: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	// Initial layout transition (depth and/or stencil)
@@ -476,7 +476,7 @@ vk::RenderPass RendererVK::getRenderPass(vk::Format colorFormat, std::optional<v
 	if (auto createResult = device->createRenderPassUnique(renderPassInfo); createResult.result == vk::Result::eSuccess) {
 		return (renderPassCache[renderPassHash] = std::move(createResult.value)).get();
 	} else {
-		Helpers::panic("Error creating render pass: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating render pass: {}\n", vk::to_string(createResult.result).c_str());
 	}
 	return {};
 }
@@ -528,7 +528,7 @@ vk::Result RendererVK::recreateSwapchain(vk::SurfaceKHR surface, vk::Extent2D sw
 			swapchainSurfaceTransform = surfaceCapabilities.currentTransform;
 		}
 	} else {
-		Helpers::panic("Error getting surface capabilities: %s\n", vk::to_string(getResult.result).c_str());
+		Helpers::panic("Error getting surface capabilities: {}\n", vk::to_string(getResult.result).c_str());
 	}
 
 	// Preset Mode
@@ -542,7 +542,7 @@ vk::Result RendererVK::recreateSwapchain(vk::SurfaceKHR surface, vk::Extent2D sw
 			swapchainPresentMode = vk::PresentModeKHR::eMailbox;
 		}
 	} else {
-		Helpers::panic("Error enumerating surface present modes: %s\n", vk::to_string(getResult.result).c_str());
+		Helpers::panic("Error enumerating surface present modes: {}\n", vk::to_string(getResult.result).c_str());
 	}
 
 	// Surface format
@@ -572,7 +572,7 @@ vk::Result RendererVK::recreateSwapchain(vk::SurfaceKHR surface, vk::Extent2D sw
 		}
 
 	} else {
-		Helpers::panic("Error enumerating surface formats: %s\n", vk::to_string(getResult.result).c_str());
+		Helpers::panic("Error enumerating surface formats: {}\n", vk::to_string(getResult.result).c_str());
 	}
 
 	vk::SwapchainCreateInfoKHR swapchainInfo = {};
@@ -594,7 +594,7 @@ vk::Result RendererVK::recreateSwapchain(vk::SurfaceKHR surface, vk::Extent2D sw
 	if (auto createResult = device->createSwapchainKHRUnique(swapchainInfo); createResult.result == vk::Result::eSuccess) {
 		swapchain = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating swapchain: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating swapchain: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	// Get swapchain images
@@ -614,11 +614,11 @@ vk::Result RendererVK::recreateSwapchain(vk::SurfaceKHR surface, vk::Extent2D sw
 			if (auto createResult = device->createImageViewUnique(viewInfo); createResult.result == vk::Result::eSuccess) {
 				swapchainImageViews[i] = std::move(createResult.value);
 			} else {
-				Helpers::panic("Error creating swapchain image-view: #%zu %s\n", i, vk::to_string(getResult.result).c_str());
+				Helpers::panic("Error creating swapchain image-view: #{}zu {}\n", i, vk::to_string(getResult.result).c_str());
 			}
 		}
 	} else {
-		Helpers::panic("Error creating acquiring swapchain images: %s\n", vk::to_string(getResult.result).c_str());
+		Helpers::panic("Error creating acquiring swapchain images: {}\n", vk::to_string(getResult.result).c_str());
 	}
 
 	return vk::Result::eSuccess;
@@ -661,7 +661,7 @@ void RendererVK::display() {
 					break;
 				}
 				default: {
-					Helpers::panic("Error acquiring next swapchain image: %s\n", vk::to_string(acquireResult.result).c_str());
+					Helpers::panic("Error acquiring next swapchain image: {}\n", vk::to_string(acquireResult.result).c_str());
 				}
 			}
 		}
@@ -802,7 +802,7 @@ void RendererVK::display() {
 	}
 
 	if (const vk::Result endResult = getCurrentCommandBuffer().end(); endResult != vk::Result::eSuccess) {
-		Helpers::panic("Error ending command buffer recording: %s\n", vk::to_string(endResult).c_str());
+		Helpers::panic("Error ending command buffer recording: {}\n", vk::to_string(endResult).c_str());
 	}
 
 	vk::SubmitInfo submitInfo = {};
@@ -828,7 +828,7 @@ void RendererVK::display() {
 
 	if (const vk::Result submitResult = graphicsQueue.submit({submitInfo}, frameFinishedFences[frameBufferingIndex].get());
 		submitResult != vk::Result::eSuccess) {
-		Helpers::panic("Error submitting to graphics queue: %s\n", vk::to_string(submitResult).c_str());
+		Helpers::panic("Error submitting to graphics queue: {}\n", vk::to_string(submitResult).c_str());
 	}
 
 	if (swapchainImageIndex != swapchainImageInvalid) {
@@ -854,7 +854,7 @@ void RendererVK::display() {
 					break;
 				}
 				default: {
-					Helpers::panic("Error presenting swapchain image: %s\n", vk::to_string(presentResult).c_str());
+					Helpers::panic("Error presenting swapchain image: {}\n", vk::to_string(presentResult).c_str());
 				}
 			}
 		}
@@ -868,7 +868,7 @@ void RendererVK::display() {
 	// Block, on the CPU, to ensure that this buffered-frame is ready for more work
 	if (auto waitResult = device->waitForFences({frameFinishedFences[frameBufferingIndex].get()}, true, std::numeric_limits<u64>::max());
 		waitResult != vk::Result::eSuccess) {
-		Helpers::panic("Error waiting on swapchain fence: %s\n", vk::to_string(waitResult).c_str());
+		Helpers::panic("Error waiting on swapchain fence: {}\n", vk::to_string(waitResult).c_str());
 	}
 
 	{
@@ -880,7 +880,7 @@ void RendererVK::display() {
 		beginInfo.flags = vk::CommandBufferUsageFlagBits::eSimultaneousUse;
 
 		if (const vk::Result beginResult = getCurrentCommandBuffer().begin(beginInfo); beginResult != vk::Result::eSuccess) {
-			Helpers::panic("Error beginning command buffer recording: %s\n", vk::to_string(beginResult).c_str());
+			Helpers::panic("Error beginning command buffer recording: {}\n", vk::to_string(beginResult).c_str());
 		}
 	}
 }
@@ -950,7 +950,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 	if (auto createResult = vk::createInstanceUnique(instanceInfo); createResult.result == vk::Result::eSuccess) {
 		instance = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating Vulkan instance: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating Vulkan instance: {}\n", vk::to_string(createResult.result).c_str());
 	}
 	// Initialize instance-specific function pointers
 	VULKAN_HPP_DEFAULT_DISPATCHER.init(instance.get());
@@ -966,7 +966,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 		if (auto createResult = instance->createDebugUtilsMessengerEXTUnique(debugCreateInfo); createResult.result == vk::Result::eSuccess) {
 			debugMessenger = std::move(createResult.value);
 		} else {
-			Helpers::warn("Error registering debug messenger: %s", vk::to_string(createResult.result).c_str());
+			Helpers::warn("Error registering debug messenger: {}", vk::to_string(createResult.result).c_str());
 		}
 	}
 
@@ -1010,7 +1010,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 		// driver gave us the devices in(ex: optimus configuration)
 		physicalDevice = physicalDevices.front();
 	} else {
-		Helpers::panic("Error enumerating physical devices: %s\n", vk::to_string(enumerateResult.result).c_str());
+		Helpers::panic("Error enumerating physical devices: {}\n", vk::to_string(enumerateResult.result).c_str());
 	}
 
 	// Get device queues
@@ -1066,7 +1066,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 			physicalDeviceExtensions.insert(extension.extensionName);
 		}
 	} else {
-		Helpers::panic("Error enumerating physical devices extensions: %s\n", vk::to_string(enumerateResult.result).c_str());
+		Helpers::panic("Error enumerating physical devices extensions: {}\n", vk::to_string(enumerateResult.result).c_str());
 	}
 
 	// Opertional extensions
@@ -1092,7 +1092,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 	if (auto createResult = physicalDevice.createDeviceUnique(deviceInfo); createResult.result == vk::Result::eSuccess) {
 		device = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating logical device: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating logical device: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	// Initialize device-specific function pointers
@@ -1112,7 +1112,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 	if (auto createResult = device->createCommandPoolUnique(commandPoolInfo); createResult.result == vk::Result::eSuccess) {
 		commandPool = std::move(createResult.value);
 	} else {
-		Helpers::panic("Error creating command pool: %s\n", vk::to_string(createResult.result).c_str());
+		Helpers::panic("Error creating command pool: {}\n", vk::to_string(createResult.result).c_str());
 	}
 
 	// Create swapchain
@@ -1137,7 +1137,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 	if (auto allocateResult = device->allocateCommandBuffersUnique(commandBuffersInfo); allocateResult.result == vk::Result::eSuccess) {
 		frameCommandBuffers = std::move(allocateResult.value);
 	} else {
-		Helpers::panic("Error allocating command buffer: %s\n", vk::to_string(allocateResult.result).c_str());
+		Helpers::panic("Error allocating command buffer: {}\n", vk::to_string(allocateResult.result).c_str());
 	}
 
 	// Initialize the first command buffer to be in the RECORDING state
@@ -1145,7 +1145,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 	beginInfo.flags = vk::CommandBufferUsageFlagBits::eSimultaneousUse;
 
 	if (const vk::Result beginResult = frameCommandBuffers[frameBufferingIndex]->begin(beginInfo); beginResult != vk::Result::eSuccess) {
-		Helpers::panic("Error beginning command buffer recording: %s\n", vk::to_string(beginResult).c_str());
+		Helpers::panic("Error beginning command buffer recording: {}\n", vk::to_string(beginResult).c_str());
 	}
 
 	// Frame-buffering synchronization primitives
@@ -1185,7 +1185,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 
 			Vulkan::setObjectName(device.get(), swapImageFreeSemaphore[i].get(), "swapImageFreeSemaphore#%zu", i);
 		} else {
-			Helpers::panic("Error creating 'present-ready' semaphore: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating 'present-ready' semaphore: {}\n", vk::to_string(createResult.result).c_str());
 		}
 
 		if (auto createResult = device->createSemaphoreUnique(semaphoreInfo); createResult.result == vk::Result::eSuccess) {
@@ -1193,13 +1193,13 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 
 			Vulkan::setObjectName(device.get(), renderFinishedSemaphore[i].get(), "renderFinishedSemaphore#%zu", i);
 		} else {
-			Helpers::panic("Error creating 'post-render' semaphore: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating 'post-render' semaphore: {}\n", vk::to_string(createResult.result).c_str());
 		}
 
 		if (auto createResult = device->createFenceUnique(fenceInfo); createResult.result == vk::Result::eSuccess) {
 			frameFinishedFences[i] = std::move(createResult.value);
 		} else {
-			Helpers::panic("Error creating 'frame-finished' fence: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating 'frame-finished' fence: {}\n", vk::to_string(createResult.result).c_str());
 		}
 
 		if (auto createResult = device->createImageUnique(screenTextureInfo); createResult.result == vk::Result::eSuccess) {
@@ -1207,7 +1207,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 
 			Vulkan::setObjectName(device.get(), screenTexture[i].get(), "screenTexture#%zu", i);
 		} else {
-			Helpers::panic("Error creating top-screen image: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating top-screen image: {}\n", vk::to_string(createResult.result).c_str());
 		}
 	}
 
@@ -1220,7 +1220,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 		if (auto [result, imageMemory] = Vulkan::commitImageHeap(device.get(), physicalDevice, images); result == vk::Result::eSuccess) {
 			framebufferMemory = std::move(imageMemory);
 		} else {
-			Helpers::panic("Error allocating framebuffer memory: %s\n", vk::to_string(result).c_str());
+			Helpers::panic("Error allocating framebuffer memory: {}\n", vk::to_string(result).c_str());
 		}
 	}
 
@@ -1240,7 +1240,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 		if (auto createResult = device->createImageViewUnique(screenTextureViewCreateInfo); createResult.result == vk::Result::eSuccess) {
 			screenTextureViews[i] = std::move(createResult.value);
 		} else {
-			Helpers::panic("Error creating screen texture view: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating screen texture view: {}\n", vk::to_string(createResult.result).c_str());
 		}
 
 		// Initial layout transition
@@ -1262,7 +1262,7 @@ void RendererVK::initGraphicsContext(SDL_Window* window) {
 		if (auto createResult = device->createFramebufferUnique(framebufferInfo); createResult.result == vk::Result::eSuccess) {
 			screenTextureFramebuffers[i] = std::move(createResult.value);
 		} else {
-			Helpers::panic("Error creating screen-texture framebuffer: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating screen-texture framebuffer: {}\n", vk::to_string(createResult.result).c_str());
 		}
 	}
 
@@ -1554,7 +1554,7 @@ void RendererVK::drawVertices(PICA::PrimType primType, std::span<const PICA::Ver
 		if (auto createResult = device->createFramebufferUnique(framebufferInfo); createResult.result == vk::Result::eSuccess) {
 			curFramebuffer = (frameFramebuffers[frameBufferingIndex].emplace_back(std::move(createResult.value))).get();
 		} else {
-			Helpers::panic("Error creating render-texture framebuffer: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating render-texture framebuffer: {}\n", vk::to_string(createResult.result).c_str());
 		}
 	}
 

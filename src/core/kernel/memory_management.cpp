@@ -61,7 +61,7 @@ void Kernel::controlMemory() {
 		Helpers::panic("ControlMemory: attempted to allocate executable memory");
 
 	if (!isAligned(addr0) || !isAligned(addr1) || !isAligned(size)) {
-		Helpers::panic("ControlMemory: Unaligned parameters\nAddr0: %08X\nAddr1: %08X\nSize: %08X", addr0, addr1, size);
+		Helpers::panic("ControlMemory: Unaligned parameters\nAddr0: {:08X}\nAddr1: {:08X}\nSize: {:08X}", addr0, addr1, size);
 	}
 
 	logSVC("ControlMemory(addr0 = %08X, addr1 = %08X, size = %08X, operation = %X (%c%c%c)%s\n",
@@ -86,7 +86,7 @@ void Kernel::controlMemory() {
 			Helpers::warn("Ignoring mprotect! Hope nothing goes wrong but if the game accesses invalid memory or crashes then we prolly need to implement this\n");
 			break;
 
-		default: Helpers::warn("ControlMemory: unknown operation %X\n", operation); break;
+		default: Helpers::warn("ControlMemory: unknown operation {:X}\n", operation); break;
 	}
 
 	regs[0] = Result::Success;
@@ -145,7 +145,7 @@ void Kernel::mapMemoryBlock() {
 				break;
 
 			case KernelHandles::APTCaptureSharedMemHandle: break;
-			default: Helpers::panic("Mapping unknown shared memory block: %X", block);
+			default: Helpers::panic("Mapping unknown shared memory block: {:X}", block);
 		}
 	} else {
 		Helpers::panic("MapMemoryBlock where the handle does not refer to a known piece of kernel shared mem");

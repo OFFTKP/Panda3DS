@@ -99,7 +99,7 @@ void DSPService::handleSyncRequest(u32 messagePointer) {
 		case DSPCommands::SetSemaphoreMask: setSemaphoreMask(messagePointer); break;
 		case DSPCommands::UnloadComponent: unloadComponent(messagePointer); break;
 		case DSPCommands::WriteProcessPipe: [[likely]] writeProcessPipe(messagePointer); break;
-		default: Helpers::panic("DSP service requested. Command: %08X\n", command);
+		default: Helpers::panic("DSP service requested. Command: {:08X}\n", command);
 	}
 }
 
@@ -315,14 +315,14 @@ void DSPService::writeProcessPipe(u32 messagePointer) {
 						dspState = DSPState::Off;
 						break;
 
-					default: Helpers::panic("Unimplemented DSP audio pipe state change %d", state);
+					default: Helpers::panic("Unimplemented DSP audio pipe state change {}", state);
 				}
 			}
 			break;
 		}
 
 		case DSPPipeType::Binary:
-			Helpers::warn("Unimplemented write to binary pipe! Size: %d\n", size);
+			Helpers::warn("Unimplemented write to binary pipe! Size: {}\n", size);
 			break;
 
 		default:

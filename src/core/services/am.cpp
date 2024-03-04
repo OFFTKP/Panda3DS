@@ -17,7 +17,7 @@ void AMService::handleSyncRequest(u32 messagePointer) {
 		case AMCommands::GetPatchTitleInfo: getPatchTitleInfo(messagePointer); break;
 		case AMCommands::GetDLCTitleInfo: getDLCTitleInfo(messagePointer); break;
 		case AMCommands::ListTitleInfo: listTitleInfo(messagePointer); break;
-		default: Helpers::panic("AM service requested. Command: %08X\n", command);
+		default: Helpers::panic("AM service requested. Command: {:08X}\n", command);
 	}
 }
 

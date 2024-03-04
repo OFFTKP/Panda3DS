@@ -19,7 +19,7 @@ namespace Vulkan {
 		if (auto createResult = device.createSamplerUnique(samplerInfo); createResult.result == vk::Result::eSuccess) {
 			return (samplerMap[samplerHash] = std::move(createResult.value)).get();
 		} else {
-			Helpers::panic("Error creating sampler: %s\n", vk::to_string(createResult.result).c_str());
+			Helpers::panic("Error creating sampler: {}\n", vk::to_string(createResult.result).c_str());
 		}
 	}
 

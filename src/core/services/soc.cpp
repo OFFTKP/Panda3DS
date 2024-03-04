@@ -15,7 +15,7 @@ void SOCService::handleSyncRequest(u32 messagePointer) {
 	const u32 command = mem.read32(messagePointer);
 	switch (command) {
 		case SOCCommands::InitializeSockets: initializeSockets(messagePointer); break;
-		default: Helpers::panic("SOC service requested. Command: %08X\n", command);
+		default: Helpers::panic("SOC service requested. Command: {:08X}\n", command);
 	}
 }
 

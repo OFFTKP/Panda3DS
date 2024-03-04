@@ -30,7 +30,7 @@ class CP15 final : public Dynarmic::A32::Coprocessor {
         if (!two && opc1 == 0 && CRn == CoprocReg::C7 && CRm == CoprocReg::C10 && opc2 == 5) {
             return &dummy; // Normally inserts a "Data Memory Barrier"
         }
-        Helpers::panic("CP15: CompileSendOneWord\nopc1: %d CRn: %d CRm: %d opc2: %d\n", opc1, (int)CRn, (int)CRm, opc2);
+        Helpers::panic("CP15: CompileSendOneWord\nopc1: {} CRn: {} CRm: {} opc2: {}\n", opc1, (int)CRn, (int)CRm, opc2);
     }
 
     CallbackOrAccessTwoWords CompileSendTwoWords(bool two, unsigned opc, CoprocReg CRm) override {
@@ -44,7 +44,7 @@ class CP15 final : public Dynarmic::A32::Coprocessor {
             return &threadStoragePointer;
         }
 
-        Helpers::panic("CP15: CompileGetOneWord\nopc1: %d CRn: %d CRm: %d opc2: %d\n", opc1, (int)CRn, (int)CRm, opc2);
+        Helpers::panic("CP15: CompileGetOneWord\nopc1: {} CRn: {} CRm: {} opc2: {}\n", opc1, (int)CRn, (int)CRm, opc2);
     }
 
     CallbackOrAccessTwoWords CompileGetTwoWords(bool two, unsigned opc, CoprocReg CRm) override {

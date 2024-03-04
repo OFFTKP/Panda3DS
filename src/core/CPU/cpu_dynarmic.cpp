@@ -50,7 +50,7 @@ void CPU::runFrame() {
 			if (Dynarmic::Has(exitReason, Dynarmic::HaltReason::CacheInvalidation)) {
 				goto execute;
 			} else {
-				Helpers::panic("Exit reason: %d\nPC: %08X", static_cast<u32>(exitReason), getReg(15));
+				Helpers::panic("Exit reason: {}\nPC: {:08X}", static_cast<u32>(exitReason), getReg(15));
 			}
 		}
 	}

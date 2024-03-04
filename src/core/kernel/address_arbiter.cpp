@@ -84,7 +84,7 @@ void Kernel::arbitrateAddress() {
 			break;
 
 		default:
-			Helpers::panic("ArbitrateAddress: Unimplemented type %s", arbitrationTypeToString(type));
+			Helpers::panic("ArbitrateAddress: Unimplemented type {}", arbitrationTypeToString(type));
 	}
 
 	requireReschedule();

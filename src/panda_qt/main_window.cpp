@@ -67,7 +67,7 @@ MainWindow::MainWindow(QApplication* app, QWidget* parent) : QMainWindow(parent)
 		auto romPath = std::filesystem::current_path() / args.at(1).toStdU16String();
 		if (!emu->loadROM(romPath)) {
 			// For some reason just .c_str() doesn't show the proper path
-			Helpers::warn("Failed to load ROM file: %s", romPath.string().c_str());
+			Helpers::warn("Failed to load ROM file: {}", romPath.string().c_str());
 		}
 	}
 

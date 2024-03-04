@@ -25,7 +25,7 @@ Result::HorizonResult SoftwareKeyboardApplet::receiveParameter(const Applets::Pa
 			break;
 		}
 
-		default: Helpers::panic("Unimplemented swkbd signal %d\n", parameter.signal);
+		default: Helpers::panic("Unimplemented swkbd signal {}\n", parameter.signal);
 	}
 
 	return Result::Success;

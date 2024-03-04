@@ -19,7 +19,7 @@ void HTTPService::handleSyncRequest(u32 messagePointer) {
 		case HTTPCommands::CreateRootCertChain: createRootCertChain(messagePointer); break;
 		case HTTPCommands::Initialize: initialize(messagePointer); break;
 		case HTTPCommands::RootCertChainAddDefaultCert: rootCertChainAddDefaultCert(messagePointer); break;
-		default: Helpers::panic("HTTP service requested. Command: %08X\n", command);
+		default: Helpers::panic("HTTP service requested. Command: {:08X}\n", command);
 	}
 }
 

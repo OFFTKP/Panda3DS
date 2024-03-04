@@ -54,7 +54,7 @@ GPU::GPU(Memory& mem, EmulatorConfig& config) : mem(mem), config(config) {
 		}
 #endif
 		default: {
-			Helpers::panic("Rendering backend not supported: %s", Renderer::typeToString(config.rendererType));
+			Helpers::panic("Rendering backend not supported: {}", Renderer::typeToString(config.rendererType));
 			break;
 		}
 	}
@@ -146,7 +146,7 @@ void GPU::drawArrays() {
 
 	if ((primType == PICA::PrimType::TriangleList && vertexCount % 3) || (primType == PICA::PrimType::TriangleStrip && vertexCount < 3) ||
 		(primType == PICA::PrimType::TriangleFan && vertexCount < 3)) {
-		Helpers::panic("Invalid vertex count for primitive. Type: %d, vert count: %d\n", primType, vertexCount);
+		Helpers::panic("Invalid vertex count for primitive. Type: {}, vert count: {}\n", int(primType), vertexCount);
 	}
 
 	// Get the configuration for the index buffer, used only for indexed drawing
@@ -290,7 +290,7 @@ void GPU::drawArrays() {
 							break;
 						}
 
-						default: Helpers::panic("[PICA] Unimplemented attribute type %d", attribType);
+						default: Helpers::panic("[PICA] Unimplemented attribute type {}", attribType);
 					}
 
 					// Fill the remaining attribute lanes with default parameters (1.0 for alpha/w, 0.0) for everything else

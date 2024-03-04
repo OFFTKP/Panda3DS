@@ -45,13 +45,13 @@ void PTMService::handleSyncRequest(u32 messagePointer, PTMService::Type type) {
 						case PTMCommands::GetPlayHistoryLength:
 							mem.write32(messagePointer + 4, Result::Success);
 							mem.write64(messagePointer + 8, 0);
-							Helpers::warn("Stubbed PTM:PLAY service requested. Command: %08X\n", command);
+							Helpers::warn("Stubbed PTM:PLAY service requested. Command: {:08X}\n", command);
 							break;
 
-						default: Helpers::panic("PTM PLAY service requested. Command: %08X\n", command); break;
+						default: Helpers::panic("PTM PLAY service requested. Command: {:08X}\n", command); break;
 					}
 				} else {
-					Helpers::panic("PTM service requested. Command: %08X\n", command);
+					Helpers::panic("PTM service requested. Command: {:08X}\n", command);
 				}
 		}
 }

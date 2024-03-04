@@ -52,7 +52,7 @@ std::optional<u32> Memory::loadELF(std::ifstream& file) {
         if (memorySize & pageMask) {
             // Round up the size of the ELF segment to a page (4KB) boundary, as the OS can only alloc this way
             memorySize = (memorySize + pageSize - 1) & -pageSize;
-            Helpers::warn("Rounding ELF segment size to %08X\n", memorySize);
+            Helpers::warn("Rounding ELF segment size to {:08X}\n", memorySize);
         }
 
         // This should also assert that findPaddr doesn't fail

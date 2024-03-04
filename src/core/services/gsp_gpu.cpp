@@ -61,7 +61,7 @@ void GPUService::handleSyncRequest(u32 messagePointer) {
 		case ServiceCommands::StoreDataCache: storeDataCache(messagePointer); break;
 		case ServiceCommands::WriteHwRegs: writeHwRegs(messagePointer); break;
 		case ServiceCommands::WriteHwRegsWithMask: writeHwRegsWithMask(messagePointer); break;
-		default: Helpers::panic("GPU service requested. Command: %08X\n", command);
+		default: Helpers::panic("GPU service requested. Command: {:08X}\n", command);
 	}
 }
 
@@ -326,7 +326,7 @@ void GPUService::processCommandBuffer() {
 				case GXCommands::TriggerDMARequest: triggerDMARequest(cmd); break;
 				case GXCommands::TriggerTextureCopy: triggerTextureCopy(cmd); break;
 				case GXCommands::FlushCacheRegions: flushCacheRegions(cmd); break;
-				default: Helpers::panic("GSP::GPU::ProcessCommands: Unknown cmd ID %d", cmdID);
+				default: Helpers::panic("GSP::GPU::ProcessCommands: Unknown cmd ID {}", cmdID);
 			}
 
 			commandsLeft--;
@@ -351,7 +351,7 @@ static u32 VaddrToPaddr(u32 addr) {
 		return 0;
 	}
 
-	Helpers::warn("[GSP::GPU VaddrToPaddr] Unknown virtual address %08X", addr);
+	Helpers::warn("[GSP::GPU VaddrToPaddr] Unknown virtual address {:08X}", addr);
 	// Obviously garbage address
 	return 0xF3310932;
 }
