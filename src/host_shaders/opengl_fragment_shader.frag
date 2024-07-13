@@ -38,6 +38,21 @@ vec4 tevSources[16];
 vec4 tevNextPreviousBuffer;
 bool tevUnimplementedSourceFlag = false;
 
+// Holds the enabled state of the lighting samples for various PICA configurations
+// As explained in https://www.3dbrew.org/wiki/GPU/Internal_Registers#GPUREG_LIGHTING_CONFIG0
+const bool samplerEnabled[9 * 7] = bool[9 * 7](
+	// D0     D1     SP     FR     RB     RG     RR
+	true,  false, true,  false, false, false, true,  // Configuration 0: D0, SP, RR
+	false, false, true,  true,  false, false, true,  // Configuration 1: FR, SP, RR
+	true,  true,  false, false, false, false, true,  // Configuration 2: D0, D1, RR
+	true,  true,  false, true,  false, false, false, // Configuration 3: D0, D1, FR
+	true,  true,  true,  false, true,  true,  true,  // Configuration 4: All except for FR
+	true,  false, true,  true,  true,  true,  true,  // Configuration 5: All except for D1
+	true,  true,  true,  true,  false, false, true,  // Configuration 6: All except for RB and RG
+	false, false, false, false, false, false, false, // Configuration 7: Unused
+	true,  true,  true,  true,  true,  true,  true   // Configuration 8: All
+);
+
 // OpenGL ES 1.1 reference pages for TEVs (this is what the PICA200 implements):
 // https://registry.khronos.org/OpenGL-Refpages/es1.1/xhtml/glTexEnv.xml
 
@@ -144,10 +159,16 @@ vec4 tevCalculateCombiner(int tev_id) {
 #define RG_LUT 5u
 #define RR_LUT 6u
 
-float lutLookup(uint lut, uint light, float value) {
-	if (lut >= FR_LUT && lut <= RR_LUT) lut -= 1u;
-	if (lut == SP_LUT) lut = light + 8u;
-	return texelFetch(u_tex_lighting_lut, ivec2(int(value * 256.0), lut), 0).r;
+uint GPUREG_LIGHTING_CONFIG0;
+uint GPUREG_LIGHTING_CONFIG1;
+uint GPUREG_LIGHTING_LUTINPUT_SELECT;
+uint GPUREG_LIGHTING_LUTINPUT_SCALE;
+uint GPUREG_LIGHTING_LUTINPUT_ABS;
+bool error_unimpl;
+vec4 unimpl_color;
+
+float lutLookup(uint lut, int index) {
+	return texelFetch(u_tex_lighting_lut, ivec2(index, 23 - lut), 0).r;
 }
 
 vec3 regToColor(uint reg) {
@@ -178,19 +199,137 @@ float decodeFP(uint hex, uint E, uint M) {
 	return uintBitsToFloat(hex);
 }
 
+bool isSamplerEnabled(uint environment_id, uint lut_id) {
+	return samplerEnabled[7 * environment_id + lut_id];
+}
+
+float fixed1_1_11ToFloat(uint fixed_num) {
+	uint sign = (fixed_num >> 12u) & 1u;
+	float integer_part = float(fixed_num >> 11u);
+	float fraction_part = float(fixed_num & 0x7FFu) / 2048.0;
+	float result = integer_part + fraction_part;
+	if (sign == 1u) result = -result;
+	return result;
+}
+
+float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 normal, vec3 view, vec3 light_vector, vec3 half_vector) {
+	uint lut_index;
+	// lut_id is one of these values
+	// 0 	D0
+	// 1 	D1
+	// 2 	SP
+	// 3 	FR
+	// 4 	RB
+	// 5 	RG
+	// 6 	RR 
+
+	// lut_index on the other hand represents the actual index of the LUT in the texture
+	// u_tex_lighting_lut has 24 LUTs and they are used like so:
+	// 0 		D0
+	// 1 		D1
+	// 2 		is missing because SP uses LUTs 8-15
+	// 3 		FR
+	// 4 		RB
+	// 5 		RG
+	// 6 		RR
+	// 8-15 	SP0-7
+	// 16-23 	DA0-7, but this is not handled in this function as the lookup is a bit different
+
+	int bit_in_config1;
+	if (lut_id == SP_LUT) {
+		// These are the spotlight attenuation LUTs
+		bit_in_config1 = 8 + int(light_id & 7u);
+		lut_index = 8u + light_id;
+	} else if (lut_id <= 6) {
+		bit_in_config1 = 16 + int(lut_id);
+		lut_index = lut_id;
+	} else {
+		error_unimpl = true;
+	}
+
+	// The light environment configuration controls which LUTs are available for use
+	// If a LUT is not available in the selected configuration, its value will always read a constant 1.0 regardless of the enable state in GPUREG_LIGHTING_CONFIG1
+	// If RR is enabled but not RG or RB, the output of RR is used for the three components; Red, Green and Blue.
+	bool current_sampler_enabled = isSamplerEnabled(environment_id, lut_id); // 7 luts per environment
+
+	if (!current_sampler_enabled || (bitfieldExtract(GPUREG_LIGHTING_CONFIG1, bit_in_config1, 1) != 0u)) {
+		return 1.0;
+	}
+
+	uint scale_id = bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_SCALE, int(lut_id) * 4, 3);
+	float scale = float(1u << scale_id);
+	if (scale_id >= 6u) scale /= 256.0;
+
+	float delta = 1.0;
+	uint input_id = bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_SELECT, int(lut_id) * 4, 3);
+	switch (input_id) {
+		case 0u: {
+			delta = dot(normal, half_vector);
+			break;
+		}
+		case 1u: {
+			delta = dot(view, half_vector);
+			break;
+		}
+		case 2u: {
+			delta = dot(normal, view);
+			break;
+		}
+		case 3u: {
+			delta = dot(light_vector, normal);
+			break;
+		}
+		case 4u: {
+			uint GPUREG_LIGHTi_SPOTDIR_LOW = readPicaReg(0x0146u + 0x10u * light_id);
+			uint GPUREG_LIGHTi_SPOTDIR_HIGH = readPicaReg(0x0147u + 0x10u * light_id);
+
+			// These are fixed point 1.1.11 values, so we need to convert them to float
+			float x = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 0, 13));
+			float y = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 16, 13));
+			float z = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_HIGH, 0, 13));
+			vec3 spotlight_vector = normalize(vec3(x, y, z));
+			delta = dot(-light_vector, spotlight_vector);  // -L dot P (aka Spotlight aka SP);
+			break;
+		}
+		case 5u: {
+			delta = 1.0;  // TODO: cos <greek symbol> (aka CP);
+			error_unimpl = true;
+			break;
+		}
+		default: {
+			delta = 1.0;
+			error_unimpl = true;
+			break;
+		}
+	}
+
+	if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 1 + 4 * int(lut_id), 1) == 0u) {
+		int index = int(clamp(floor(delta * 256.0), 0.f, 255.f));
+		return lutLookup(lut_index, index) * scale;
+	} else {
+		int index = int(clamp(floor(delta * 128.0), -128.f, 127.f));
+		delta = delta * 128.0 - float(index);
+		if (index < 0) index += 256;
+		return lutLookup(lut_index, index) * scale;
+	}
+}
+
 // Implements the following algorthm: https://mathb.in/26766
 void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
+	error_unimpl = false;
+	unimpl_color = vec4(1.0, 0.0, 1.0, 1.0);
+
 	// Quaternions describe a transformation from surface-local space to eye space.
 	// In surface-local space, by definition (and up to permutation) the normal vector is (0,0,1),
 	// the tangent vector is (1,0,0), and the bitangent vector is (0,1,0).
 	vec3 normal = normalize(v_normal);
-	vec3 tangent = normalize(v_tangent);
+	vec3 tangent = normalize(v_tangent); // TODO: these dont have to be normalized as they are normalized in the vshader?
 	vec3 bitangent = normalize(v_bitangent);
-	vec3 view = normalize(v_view);
+	vec3 view = normalize(v_view); // TODO: except you
 
 	uint GPUREG_LIGHTING_ENABLE = readPicaReg(0x008Fu);
 	if (bitfieldExtract(GPUREG_LIGHTING_ENABLE, 0, 1) == 0u) {
-		primary_color = secondary_color = vec4(1.0);
+		primary_color = secondary_color = vec4(0.0);
 		return;
 	}
 
@@ -204,13 +343,14 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 	primary_color.rgb += regToColor(GPUREG_LIGHTING_AMBIENT);
 
 	uint GPUREG_LIGHTING_LUTINPUT_ABS = readPicaReg(0x01D0u);
-	uint GPUREG_LIGHTING_LUTINPUT_SELECT = readPicaReg(0x01D1u);
-	uint GPUREG_LIGHTING_CONFIG0 = readPicaReg(0x01C3u);
-	uint GPUREG_LIGHTING_CONFIG1 = readPicaReg(0x01C4u);
 	uint GPUREG_LIGHTING_LUTINPUT_SCALE = readPicaReg(0x01D2u);
-	float d[7];
+	GPUREG_LIGHTING_LUTINPUT_SELECT = readPicaReg(0x01D1u);
+	GPUREG_LIGHTING_CONFIG0 = readPicaReg(0x01C3u);
+	GPUREG_LIGHTING_CONFIG1 = readPicaReg(0x01C4u);
 
-	bool error_unimpl = false;
+	uint lookup_config = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 4, 4);
+	vec4 diffuse_sum = vec4(0.0, 0.0, 0.0, 1.0);
+	vec4 specular_sum = vec4(0.0, 0.0, 0.0, 1.0);
 
 	for (uint i = 0u; i < GPUREG_LIGHTING_NUM_LIGHTS; i++) {
 		uint light_id = bitfieldExtract(GPUREG_LIGHTING_LIGHT_PERMUTATION, int(i * 3u), 3);
@@ -241,73 +381,7 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 			half_vector = normalize(normalize(light_vector) + view);
 		}
 
-		for (int c = 0; c < 7; c++) {
-			if (bitfieldExtract(GPUREG_LIGHTING_CONFIG1, 16 + c, 1) == 0u) {
-				uint scale_id = bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_SCALE, c * 4, 3);
-				float scale = float(1u << scale_id);
-				if (scale_id >= 6u) scale /= 256.0;
-
-				uint input_id = bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_SELECT, c * 4, 3);
-				if (input_id == 0u)
-					d[c] = dot(normal, half_vector);
-				else if (input_id == 1u)
-					d[c] = dot(view, half_vector);
-				else if (input_id == 2u)
-					d[c] = dot(normal, view);
-				else if (input_id == 3u)
-					d[c] = dot(light_vector, normal);
-				else if (input_id == 4u) {
-					uint GPUREG_LIGHTi_SPOTDIR_LOW = readPicaReg(0x0146u + 0x10u * light_id);
-					uint GPUREG_LIGHTi_SPOTDIR_HIGH = readPicaReg(0x0147u + 0x10u * light_id);
-					vec3 spot_light_vector = normalize(vec3(
-						decodeFP(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 0, 16), 1u, 11u),
-						decodeFP(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 16, 16), 1u, 11u),
-						decodeFP(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_HIGH, 0, 16), 1u, 11u)
-					));
-					d[c] = dot(-light_vector, spot_light_vector);  // -L dot P (aka Spotlight aka SP);
-				} else if (input_id == 5u) {
-					d[c] = 1.0;  // TODO: cos <greek symbol> (aka CP);
-					error_unimpl = true;
-				} else {
-					d[c] = 1.0;
-				}
-
-				d[c] = lutLookup(uint(c), light_id, d[c] * 0.5 + 0.5) * scale;
-				if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 2 * c, 1) != 0u) d[c] = abs(d[c]);
-			} else {
-				d[c] = 1.0;
-			}
-		}
-
-		uint lookup_config = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 4, 4);
-		if (lookup_config == 0u) {
-			d[D1_LUT] = 0.0;
-			d[FR_LUT] = 0.0;
-			d[RG_LUT] = d[RB_LUT] = d[RR_LUT];
-		} else if (lookup_config == 1u) {
-			d[D0_LUT] = 0.0;
-			d[D1_LUT] = 0.0;
-			d[RG_LUT] = d[RB_LUT] = d[RR_LUT];
-		} else if (lookup_config == 2u) {
-			d[FR_LUT] = 0.0;
-			d[SP_LUT] = 0.0;
-			d[RG_LUT] = d[RB_LUT] = d[RR_LUT];
-		} else if (lookup_config == 3u) {
-			d[SP_LUT] = 0.0;
-			d[RG_LUT] = d[RB_LUT] = d[RR_LUT] = 1.0;
-		} else if (lookup_config == 4u) {
-			d[FR_LUT] = 0.0;
-		} else if (lookup_config == 5u) {
-			d[D1_LUT] = 0.0;
-		} else if (lookup_config == 6u) {
-			d[RG_LUT] = d[RB_LUT] = d[RR_LUT];
-		}
-
-		float distance_factor = 1.0;  // a
-		float indirect_factor = 1.0;  // fi
-		float shadow_factor = 1.0;    // o
-
-		float NdotL = dot(normal, light_vector);  // Li dot N
+		float NdotL = dot(normal, light_vector);  // N dot Li
 
 		// Two sided diffuse
 		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 1, 1) == 0u)
@@ -315,20 +389,63 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		else
 			NdotL = abs(NdotL);
 
-		float light_factor = distance_factor * d[SP_LUT] * indirect_factor * shadow_factor;
+		uint environment_id = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 4, 4);
+		float spotlight_attenuation = lightLutLookup(environment_id, SP_LUT, light_id, normal, view, light_vector, half_vector);
+		float distance_attenuation = 1.0;
+		float specular0_distribution = lightLutLookup(environment_id, D0_LUT, light_id, normal, view, light_vector, half_vector);
+		float specular1_distribution = lightLutLookup(environment_id, D1_LUT, light_id, normal, view, light_vector, half_vector);
+		vec3 reflected_color;
+		reflected_color.r = lightLutLookup(environment_id, RR_LUT, light_id, normal, view, light_vector, half_vector);
+		
+		if (isSamplerEnabled(environment_id, RG_LUT)) {
+			reflected_color.g = lightLutLookup(environment_id, RG_LUT, light_id, normal, view, light_vector, half_vector);
+		} else {
+			reflected_color.g = reflected_color.r;
+		}
 
-		primary_color.rgb += light_factor * (regToColor(GPUREG_LIGHTi_AMBIENT) + regToColor(GPUREG_LIGHTi_DIFFUSE) * NdotL);
-		secondary_color.rgb += light_factor * (regToColor(GPUREG_LIGHTi_SPECULAR0) * d[D0_LUT] +
-											   regToColor(GPUREG_LIGHTi_SPECULAR1) * d[D1_LUT] * vec3(d[RR_LUT], d[RG_LUT], d[RB_LUT]));
+		if (isSamplerEnabled(environment_id, RB_LUT)) {
+			reflected_color.b = lightLutLookup(environment_id, RB_LUT, light_id, normal, view, light_vector, half_vector);
+		} else {
+			reflected_color.b = reflected_color.r;
+		}
+
+		vec3 specular0 = regToColor(GPUREG_LIGHTi_SPECULAR0) * specular0_distribution;
+		vec3 specular1 = regToColor(GPUREG_LIGHTi_SPECULAR1) * specular1_distribution * reflected_color;
+
+		float geometric_factor;
+		bool use_geo_0 = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 2, 1) == 1u;
+		bool use_geo_1 = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 3, 1) == 1u;
+		if (use_geo_0 || use_geo_1) {
+			geometric_factor = dot(half_vector, half_vector);
+			geometric_factor = geometric_factor == 0.0 ? 0.0 : min(NdotL / geometric_factor, 1.0);
+		}
+		specular0 *= use_geo_0 ? geometric_factor : 1.0;
+		specular1 *= use_geo_1 ? geometric_factor : 1.0;
+
+		if (i == GPUREG_LIGHTING_NUM_LIGHTS - 1u) {
+			uint fresnel_output1 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 2, 1);
+			uint fresnel_output2 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 3, 1);
+			float fresnel_factor = lightLutLookup(environment_id, FR_LUT, light_id, normal, view, light_vector, half_vector);
+			if (fresnel_output1 == 1u) {
+				diffuse_sum.a = fresnel_factor;
+			}
+
+			if (fresnel_output2 == 1u) {
+				specular_sum.a = fresnel_factor;
+			}
+		}
+
+		float light_factor = distance_attenuation * spotlight_attenuation;
+		diffuse_sum.rgb += light_factor * (regToColor(GPUREG_LIGHTi_AMBIENT) + regToColor(GPUREG_LIGHTi_DIFFUSE) * NdotL);
+		specular_sum.rgb += light_factor * (specular0 + specular1);
 	}
-	uint fresnel_output1 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 2, 1);
-	uint fresnel_output2 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 3, 1);
 
-	if (fresnel_output1 == 1u) primary_color.a = d[FR_LUT];
-	if (fresnel_output2 == 1u) secondary_color.a = d[FR_LUT];
+	vec4 global_ambient = vec4(regToColor(GPUREG_LIGHTING_AMBIENT), 1.0);
+	primary_color = clamp(global_ambient + diffuse_sum, vec4(0.0), vec4(1.0));
+	secondary_color = clamp(specular_sum, vec4(0.0), vec4(1.0));
 
 	if (error_unimpl) {
-		// secondary_color = primary_color = vec4(1.0, 0., 1.0, 1.0);
+		secondary_color = primary_color = unimpl_color;
 	}
 }
 
