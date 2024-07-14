@@ -168,7 +168,7 @@ bool error_unimpl;
 vec4 unimpl_color;
 
 float lutLookup(uint lut, int index) {
-	return texelFetch(u_tex_lighting_lut, ivec2(index, 23 - lut), 0).r;
+	return texelFetch(u_tex_lighting_lut, ivec2(index, lut), 0).r;
 }
 
 vec3 regToColor(uint reg) {
@@ -304,8 +304,8 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 	}
 
 	if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 1 + 4 * int(lut_id), 1) == 0u) {
-		int index = int(clamp(floor(delta * 256.0), 0.f, 255.f));
-		return lutLookup(lut_index, index) * scale;
+		int index = int(clamp(floor(delta * 255.0), 0.f, 255.f));
+		return lutLookup(lut_index, index);
 	} else {
 		int index = int(clamp(floor(delta * 128.0), -128.f, 127.f));
 		delta = delta * 128.0 - float(index);
@@ -342,8 +342,8 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 
 	primary_color.rgb += regToColor(GPUREG_LIGHTING_AMBIENT);
 
-	uint GPUREG_LIGHTING_LUTINPUT_ABS = readPicaReg(0x01D0u);
 	uint GPUREG_LIGHTING_LUTINPUT_SCALE = readPicaReg(0x01D2u);
+	GPUREG_LIGHTING_LUTINPUT_ABS = readPicaReg(0x01D0u);
 	GPUREG_LIGHTING_LUTINPUT_SELECT = readPicaReg(0x01D1u);
 	GPUREG_LIGHTING_CONFIG0 = readPicaReg(0x01C3u);
 	GPUREG_LIGHTING_CONFIG1 = readPicaReg(0x01C4u);
