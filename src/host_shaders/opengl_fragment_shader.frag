@@ -308,7 +308,6 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 		return lutLookup(lut_index, index);
 	} else {
 		int index = int(clamp(floor(delta * 128.0), -128.f, 127.f));
-		delta = delta * 128.0 - float(index);
 		if (index < 0) index += 256;
 		return lutLookup(lut_index, index) * scale;
 	}
