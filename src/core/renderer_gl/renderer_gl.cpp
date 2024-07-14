@@ -354,6 +354,10 @@ void RendererGL::updateLightingLUT() {
 	for (int i = 0; i < gpu.lightingLUT.size(); i++) {
 		uint64_t value = gpu.lightingLUT[i] & 0xFFF;
 		lightingLut[i] = (float)(value << 4) / 65535.0f;
+
+		if (gpu.floats) {
+			gpu.floats[i] = lightingLut[i];
+		}
 	}
 
 	glActiveTexture(GL_TEXTURE0 + 3);
@@ -363,6 +367,32 @@ void RendererGL::updateLightingLUT() {
 }
 
 void RendererGL::drawVertices(PICA::PrimType primType, std::span<const Vertex> vertices) {
+	static int lemme_draw = 0;
+
+	// if (lemme_draw == 0 && vertices.size() != 2694) {
+	// 	return;
+	// } else {
+	// 	if (vertices.size() == 2694) {
+	// 		lemme_draw = 4;
+	// 	} else {
+	// 		lemme_draw--;
+	// 	}
+
+
+	// 	auto& regs = gpu.getRegisters();
+	// 	auto light0config = regs[0x149];
+	// 	auto numLights = regs[0x01C2] + 1;
+	// 	auto config0 = regs[0x01C3];
+	// 	auto config1 = regs[0x01C4];
+	// 	auto select = regs[0x1d1];
+
+	// 	// printf("Light0 config: %08X\n", light0config);
+	// 	// printf("Num lights: %08X\n", numLights);
+	// 	// printf("Config0: %08X\n", config0);
+	// 	// printf("Config1: %08X\n", config1);
+	// 	// printf("Select: %08X\n", select);
+	// }
+
 	// The fourth type is meant to be "Geometry primitive". TODO: Find out what that is
 	static constexpr std::array<OpenGL::Primitives, 4> primTypes = {
 		OpenGL::Triangle,
@@ -423,7 +453,7 @@ void RendererGL::drawVertices(PICA::PrimType primType, std::span<const Vertex> v
 	// The texturing and the fragment lighting registers. Therefore we upload them all in one go to avoid multiple slow uniform updates
 	glUniform1uiv(picaRegLoc, 0x200 - 0x48, &regs[0x48]);
 
-	if (gpu.lightingLUTDirty) {
+	if (true||gpu.lightingLUTDirty) {
 		updateLightingLUT();
 	}
 
@@ -804,14 +834,18 @@ std::string RendererGL::getUbershader() {
 }
 
 void RendererGL::setUbershader(const std::string& shader) {
-	auto gl_resources = cmrc::RendererGL::get_filesystem();
-	auto vertexShaderSource = gl_resources.open("opengl_vertex_shader.vert");
+    auto gl_resources = cmrc::RendererGL::get_filesystem();
+    auto vertexShaderSource = gl_resources.open("opengl_vertex_shader.vert");
 
-	OpenGL::Shader vert({vertexShaderSource.begin(), vertexShaderSource.size()}, OpenGL::Vertex);
-	OpenGL::Shader frag(shader, OpenGL::Fragment);
-	triangleProgram.create({vert, frag});
+    OpenGL::Shader vert({vertexShaderSource.begin(), vertexShaderSource.size()}, OpenGL::Vertex);
+    OpenGL::Shader frag(shader, OpenGL::Fragment);
+    triangleProgram.create({vert, frag});
 
-	initUbershader(triangleProgram);
+    initUbershader(triangleProgram);
+
+    glUniform1f(depthScaleLoc, oldDepthScale);
+    glUniform1f(depthOffsetLoc, oldDepthOffset);
+    glUniform1i(depthmapEnableLoc, oldDepthmapEnable);
 }
 
 void RendererGL::initUbershader(OpenGL::Program& program) {

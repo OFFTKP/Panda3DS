@@ -77,7 +77,7 @@ MainWindow::MainWindow(QApplication* app, QWidget* parent) : QMainWindow(parent)
 	cheatsEditor = new CheatsWindow(emu, {}, this);
 	patchWindow = new PatchWindow(this);
 	luaEditor = new TextEditorWindow(this, "script.lua", "");
-	shaderEditor = new ShaderEditorWindow(this, "shader.glsl", "");
+	shaderEditor = new ShaderEditorWindow(emu, this, "shader.glsl", "");
 
 	shaderEditor->setEnable(emu->getRenderer()->supportsShaderReload());
 	if (shaderEditor->supported) {

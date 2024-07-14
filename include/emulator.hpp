@@ -124,6 +124,7 @@ class Emulator {
 	LuaManager& getLua() { return lua; }
 	Scheduler& getScheduler() { return scheduler; }
 	Memory& getMemory() { return memory; }
+	GPU& getGPU() { return gpu; }
 
 	RendererType getRendererType() const { return config.rendererType; }
 	Renderer* getRenderer() { return gpu.getRenderer(); }

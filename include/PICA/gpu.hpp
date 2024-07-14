@@ -82,6 +82,8 @@ class GPU {
 	PICA::Vertex getImmediateModeVertex();
 
   public:
+	float* floats = nullptr;
+	void setFloats(float* floats) { this->floats = floats; }
 	// 256 entries per LUT with each LUT as its own row forming a 2D image 256 * LUT_COUNT
 	// Encoded in PICA native format
 	static constexpr size_t LightingLutSize = PICA::Lights::LUT_Count * 256;

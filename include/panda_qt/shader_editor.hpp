@@ -9,6 +9,8 @@
 #include "zep/mode_repl.h"
 #include "zep/regress.h"
 
+class Emulator;
+
 class ShaderEditorWindow : public QDialog {
 	Q_OBJECT
 
@@ -21,7 +23,9 @@ class ShaderEditorWindow : public QDialog {
 	// Whether this backend supports shader editor
 	bool supported = true;
 
-	ShaderEditorWindow(QWidget* parent, const std::string& filename, const std::string& initialText);
+	ShaderEditorWindow(Emulator* emulator, QWidget* parent, const std::string& filename, const std::string& initialText);
 	void setText(const std::string& text) { zepWidget.GetEditor().GetMRUBuffer()->SetText(text); }
 	void setEnable(bool enable);
+
+	Emulator* emulator;
 };
