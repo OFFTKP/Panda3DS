@@ -204,15 +204,6 @@ bool isSamplerEnabled(uint environment_id, uint lut_id) {
 	return samplerEnabled[7 * environment_id + lut_id];
 }
 
-float fixed1_1_11ToFloat(uint fixed_num) {
-	uint sign = (fixed_num >> 12u) & 1u;
-	float integer_part = float(fixed_num >> 11u);
-	float fraction_part = float(fixed_num & 0x7FFu) / 2048.0;
-	float result = integer_part + fraction_part;
-	if (sign == 1u) result = -result;
-	return result;
-}
-
 float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 normal, vec3 view, vec3 light_vector, vec3 half_vector) {
 	uint lut_index;
 	// lut_id is one of these values
@@ -281,15 +272,16 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 			break;
 		}
 		case 4u: {
-			uint GPUREG_LIGHTi_SPOTDIR_LOW = readPicaReg(0x0146u + 0x10u * light_id);
-			uint GPUREG_LIGHTi_SPOTDIR_HIGH = readPicaReg(0x0147u + 0x10u * light_id);
+			// These are ints so that bitfieldExtract sign extends for us
+			int GPUREG_LIGHTi_SPOTDIR_LOW = int(readPicaReg(0x0146u + 0x10u * light_id));
+			int GPUREG_LIGHTi_SPOTDIR_HIGH = int(readPicaReg(0x0147u + 0x10u * light_id));
 
 			// These are fixed point 1.1.11 values, so we need to convert them to float
-			float x = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 0, 13));
-			float y = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 16, 13));
-			float z = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_HIGH, 0, 13));
-			vec3 spotlight_vector = normalize(vec3(x, y, z));
-			delta = dot(light_vector, spotlight_vector);
+			float x = float(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 0, 13)) / 2047.0;
+			float y = float(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 16, 13)) / 2047.0;
+			float z = float(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_HIGH, 0, 13)) / 2047.0;
+			vec3 spotlight_vector = vec3(x, y, z);
+			delta = dot(light_vector, spotlight_vector); // spotlight direction is negated so we don't negate light_vector
 			break;
 		}
 		case 5u: {
@@ -304,11 +296,13 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 		}
 	}
 
+	// 0 = enabled
 	if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 1 + 4 * int(lut_id), 1) == 0u) {
 		delta = abs(delta);
-		int index = int(clamp(floor(delta * 255.0), 0.f, 255.f));
+		int index = int(clamp(floor(delta * 256.0), 0.f, 255.f));
 		return lutLookup(lut_index, index) * scale;
 	} else {
+		// Range is [-1, 1] so we need to map it to [0, 1]
 		int index = int(clamp(floor(delta * 128.0), -128.f, 127.f));
 		if (index < 0) index += 256;
 		return lutLookup(lut_index, index) * scale;
