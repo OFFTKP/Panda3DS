@@ -364,22 +364,25 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		uint GPUREG_LIGHTi_VECTOR_HIGH = readPicaReg(0x0145u + 0x10u * light_id);
 		GPUREG_LIGHTi_CONFIG = readPicaReg(0x0149u + 0x10u * light_id);
 
-		vec3 light_vector = normalize(vec3(
+		vec3 light_position = normalize(vec3(
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 0, 16), 5u, 10u), decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 16, 16), 5u, 10u),
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_HIGH, 0, 16), 5u, 10u)
 		));
+		vec3 light_vector;
 
 		vec3 half_vector;
 
 		// Positional Light
 		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 0, 1) == 0u) {
-			// error_unimpl = true;
-			half_vector = normalize(normalize(light_vector + v_view) + view);
+			light_vector = normalize(light_position + v_view);
+			half_vector = light_vector + view;
 		}
 
 		// Directional light
 		else {
-			half_vector = normalize(normalize(light_vector) + view);
+			light_vector = light_position;
+			half_vector = light_vector + view;
+			// half_vector = normalize(normalize(light_vector) + view);
 		}
 
 		float NdotL = dot(normal, light_vector);  // N dot Li
