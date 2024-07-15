@@ -364,10 +364,10 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		uint GPUREG_LIGHTi_VECTOR_HIGH = readPicaReg(0x0145u + 0x10u * light_id);
 		GPUREG_LIGHTi_CONFIG = readPicaReg(0x0149u + 0x10u * light_id);
 
-		vec3 light_position = vec3(
+		vec3 light_position = normalize(vec3(
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 0, 16), 5u, 10u), decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 16, 16), 5u, 10u),
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_HIGH, 0, 16), 5u, 10u)
-		);
+		));
 		vec3 light_vector;
 		vec3 half_vector;
 
