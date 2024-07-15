@@ -307,7 +307,7 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 	if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 1 + 4 * int(lut_id), 1) == 0u) {
 		delta = abs(delta);
 		int index = int(clamp(floor(delta * 255.0), 0.f, 255.f));
-		return lutLookup(lut_index, index);
+		return lutLookup(lut_index, index) * scale;
 	} else {
 		int index = int(clamp(floor(delta * 128.0), -128.f, 127.f));
 		if (index < 0) index += 256;
