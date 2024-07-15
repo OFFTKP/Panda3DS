@@ -159,12 +159,11 @@ vec4 tevCalculateCombiner(int tev_id) {
 #define RG_LUT 5u
 #define RR_LUT 6u
 
-uint GPUREG_LIGHTING_CONFIG0;
+uint GPUREG_LIGHTi_CONFIG;
 uint GPUREG_LIGHTING_CONFIG1;
 uint GPUREG_LIGHTING_LUTINPUT_SELECT;
 uint GPUREG_LIGHTING_LUTINPUT_SCALE;
 uint GPUREG_LIGHTING_LUTINPUT_ABS;
-uint GPUREG_LIGHTi_CONFIG;
 bool error_unimpl;
 vec4 unimpl_color;
 
@@ -204,7 +203,7 @@ bool isSamplerEnabled(uint environment_id, uint lut_id) {
 	return samplerEnabled[7 * environment_id + lut_id];
 }
 
-float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 normal, vec3 view, vec3 light_vector, vec3 half_vector) {
+float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 light_vector, vec3 half_vector) {
 	uint lut_index;
 	// lut_id is one of these values
 	// 0 	D0
@@ -256,19 +255,19 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 	uint input_id = bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_SELECT, int(lut_id) * 4, 3);
 	switch (input_id) {
 		case 0u: {
-			delta = dot(normal, normalize(half_vector));
+			delta = dot(v_normal, normalize(half_vector));
 			break;
 		}
 		case 1u: {
-			delta = dot(view, normalize(half_vector));
+			delta = dot(normalize(v_view), normalize(half_vector));
 			break;
 		}
 		case 2u: {
-			delta = dot(normal, view);
+			delta = dot(v_normal, normalize(v_view));
 			break;
 		}
 		case 3u: {
-			delta = dot(light_vector, normal);
+			delta = dot(light_vector, v_normal);
 			break;
 		}
 		case 4u: {
@@ -298,7 +297,12 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 
 	// 0 = enabled
 	if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 1 + 4 * int(lut_id), 1) == 0u) {
-		delta = abs(delta);
+		// Two sided diffuse
+		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 1, 1) == 0u) {
+			delta = max(delta, 0.0);
+		} else {
+			delta = abs(delta);
+		}
 		int index = int(clamp(floor(delta * 256.0), 0.f, 255.f));
 		return lutLookup(lut_index, index) * scale;
 	} else {
@@ -314,41 +318,36 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 	error_unimpl = false;
 	unimpl_color = vec4(1.0, 0.0, 1.0, 1.0);
 
-	// Quaternions describe a transformation from surface-local space to eye space.
-	// In surface-local space, by definition (and up to permutation) the normal vector is (0,0,1),
-	// the tangent vector is (1,0,0), and the bitangent vector is (0,1,0).
-	vec3 normal = normalize(v_normal);
-	vec3 tangent = normalize(v_tangent); // TODO: these dont have to be normalized as they are normalized in the vshader?
-	vec3 bitangent = normalize(v_bitangent);
-	vec3 view = normalize(v_view); // TODO: except you
-
 	uint GPUREG_LIGHTING_ENABLE = readPicaReg(0x008Fu);
 	if (bitfieldExtract(GPUREG_LIGHTING_ENABLE, 0, 1) == 0u) {
 		primary_color = secondary_color = vec4(0.0);
 		return;
 	}
 
-	uint GPUREG_LIGHTING_AMBIENT = readPicaReg(0x01C0u);
 	uint GPUREG_LIGHTING_NUM_LIGHTS = (readPicaReg(0x01C2u) & 0x7u) + 1u;
 	uint GPUREG_LIGHTING_LIGHT_PERMUTATION = readPicaReg(0x01D9u);
 
 	primary_color = vec4(vec3(0.0), 1.0);
 	secondary_color = vec4(vec3(0.0), 1.0);
 
-	primary_color.rgb += regToColor(GPUREG_LIGHTING_AMBIENT);
-
 	uint GPUREG_LIGHTING_LUTINPUT_SCALE = readPicaReg(0x01D2u);
+	uint GPUREG_LIGHTING_CONFIG0 = readPicaReg(0x01C3u);
+	GPUREG_LIGHTING_CONFIG1 = readPicaReg(0x01C4u);
 	GPUREG_LIGHTING_LUTINPUT_ABS = readPicaReg(0x01D0u);
 	GPUREG_LIGHTING_LUTINPUT_SELECT = readPicaReg(0x01D1u);
-	GPUREG_LIGHTING_CONFIG0 = readPicaReg(0x01C3u);
-	GPUREG_LIGHTING_CONFIG1 = readPicaReg(0x01C4u);
 
-	uint lookup_config = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 4, 4);
 	vec4 diffuse_sum = vec4(0.0, 0.0, 0.0, 1.0);
 	vec4 specular_sum = vec4(0.0, 0.0, 0.0, 1.0);
 
+	uint environment_id = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 4, 4);
+	bool clamp_highlights = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 27, 1) == 1u;
+
+	uint light_id;
+	vec3 light_vector;
+	vec3 half_vector;
+
 	for (uint i = 0u; i < GPUREG_LIGHTING_NUM_LIGHTS; i++) {
-		uint light_id = bitfieldExtract(GPUREG_LIGHTING_LIGHT_PERMUTATION, int(i * 3u), 3);
+		light_id = bitfieldExtract(GPUREG_LIGHTING_LIGHT_PERMUTATION, int(i * 3u), 3);
 
 		uint GPUREG_LIGHTi_SPECULAR0 = readPicaReg(0x0140u + 0x10u * light_id);
 		uint GPUREG_LIGHTi_SPECULAR1 = readPicaReg(0x0141u + 0x10u * light_id);
@@ -358,29 +357,27 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		uint GPUREG_LIGHTi_VECTOR_HIGH = readPicaReg(0x0145u + 0x10u * light_id);
 		GPUREG_LIGHTi_CONFIG = readPicaReg(0x0149u + 0x10u * light_id);
 
-		vec3 light_position = normalize(vec3(
+		float light_distance;
+		vec3 light_position = vec3(
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 0, 16), 5u, 10u), decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 16, 16), 5u, 10u),
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_HIGH, 0, 16), 5u, 10u)
-		));
-		vec3 light_vector;
-		vec3 half_vector;
+		);
 
 		// Positional Light
 		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 0, 1) == 0u) {
 			light_vector = light_position + v_view;
-			half_vector = normalize(light_vector) + view;
 		}
 
 		// Directional light
 		else {
 			light_vector = light_position;
-			half_vector = normalize(light_vector) + view;
 		}
 
-		float light_distance = length(light_vector);
+		light_distance = length(light_vector);
 		light_vector = normalize(light_vector);
+		half_vector = light_vector + normalize(v_view);
 
-		float NdotL = dot(normal, light_vector);  // N dot Li
+		float NdotL = dot(v_normal, light_vector);  // N dot Li
 
 		// Two sided diffuse
 		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 1, 1) == 0u)
@@ -388,7 +385,15 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		else
 			NdotL = abs(NdotL);
 
-		// Distance attenuation is computed differently from the other LUTs, for example
+		float geometric_factor;
+		bool use_geo_0 = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 2, 1) == 1u;
+		bool use_geo_1 = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 3, 1) == 1u;
+		if (use_geo_0 || use_geo_1) {
+			geometric_factor = dot(half_vector, half_vector);
+			geometric_factor = geometric_factor == 0.0 ? 0.0 : min(NdotL / geometric_factor, 1.0);
+		}
+
+		// Distance attenuation is computed differently from the other factors, for example
 		// it doesn't store its scale in GPUREG_LIGHTING_LUTINPUT_SCALE and it doesn't use 
 		// GPUREG_LIGHTING_LUTINPUT_SELECT. Instead, it uses the distance from the light to the
 		// fragment and the distance attenuation scale and bias to calculate where in the LUT to look up.
@@ -407,21 +412,20 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 			distance_attenuation = lutLookup(16u + light_id, index);
 		}
 
-		uint environment_id = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 4, 4);
-		float spotlight_attenuation = lightLutLookup(environment_id, SP_LUT, light_id, normal, view, light_vector, half_vector);
-		float specular0_distribution = lightLutLookup(environment_id, D0_LUT, light_id, normal, view, light_vector, half_vector);
-		float specular1_distribution = lightLutLookup(environment_id, D1_LUT, light_id, normal, view, light_vector, half_vector);
+		float spotlight_attenuation = lightLutLookup(environment_id, SP_LUT, light_id, light_vector, half_vector);
+		float specular0_distribution = lightLutLookup(environment_id, D0_LUT, light_id, light_vector, half_vector);
+		float specular1_distribution = lightLutLookup(environment_id, D1_LUT, light_id, light_vector, half_vector);
 		vec3 reflected_color;
-		reflected_color.r = lightLutLookup(environment_id, RR_LUT, light_id, normal, view, light_vector, half_vector);
+		reflected_color.r = lightLutLookup(environment_id, RR_LUT, light_id, light_vector, half_vector);
 		
 		if (isSamplerEnabled(environment_id, RG_LUT)) {
-			reflected_color.g = lightLutLookup(environment_id, RG_LUT, light_id, normal, view, light_vector, half_vector);
+			reflected_color.g = lightLutLookup(environment_id, RG_LUT, light_id, light_vector, half_vector);
 		} else {
 			reflected_color.g = reflected_color.r;
 		}
 
 		if (isSamplerEnabled(environment_id, RB_LUT)) {
-			reflected_color.b = lightLutLookup(environment_id, RB_LUT, light_id, normal, view, light_vector, half_vector);
+			reflected_color.b = lightLutLookup(environment_id, RB_LUT, light_id, light_vector, half_vector);
 		} else {
 			reflected_color.b = reflected_color.r;
 		}
@@ -429,34 +433,37 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		vec3 specular0 = regToColor(GPUREG_LIGHTi_SPECULAR0) * specular0_distribution;
 		vec3 specular1 = regToColor(GPUREG_LIGHTi_SPECULAR1) * specular1_distribution * reflected_color;
 
-		float geometric_factor;
-		bool use_geo_0 = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 2, 1) == 1u;
-		bool use_geo_1 = bitfieldExtract(GPUREG_LIGHTi_CONFIG, 3, 1) == 1u;
-		if (use_geo_0 || use_geo_1) {
-			geometric_factor = dot(half_vector, half_vector);
-			geometric_factor = geometric_factor == 0.0 ? 0.0 : min(NdotL / geometric_factor, 1.0);
-		}
 		specular0 *= use_geo_0 ? geometric_factor : 1.0;
 		specular1 *= use_geo_1 ? geometric_factor : 1.0;
 
-		if (i == GPUREG_LIGHTING_NUM_LIGHTS - 1u) {
-			uint fresnel_output1 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 2, 1);
-			uint fresnel_output2 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 3, 1);
-			float fresnel_factor = lightLutLookup(environment_id, FR_LUT, light_id, normal, view, light_vector, half_vector);
-			if (fresnel_output1 == 1u) {
-				diffuse_sum.a = fresnel_factor;
-			}
-
-			if (fresnel_output2 == 1u) {
-				specular_sum.a = fresnel_factor;
-			}
+		float clamp_factor = 1.0;
+		if (clamp_highlights && NdotL == 0.0) {
+			clamp_factor = 0.0;
 		}
 
 		float light_factor = distance_attenuation * spotlight_attenuation;
 		diffuse_sum.rgb += light_factor * (regToColor(GPUREG_LIGHTi_AMBIENT) + regToColor(GPUREG_LIGHTi_DIFFUSE) * NdotL);
-		specular_sum.rgb += light_factor * (specular0 + specular1);
+		specular_sum.rgb += light_factor * clamp_factor * (specular0 + specular1);
 	}
 
+	uint fresnel_output1 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 2, 1);
+	uint fresnel_output2 = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 3, 1);
+	// Uses parameters from the last light as Fresnel is only applied to the last light
+	float fresnel_factor;
+	
+	if (fresnel_output1 == 1u || fresnel_output2 == 1u) {
+		fresnel_factor = lightLutLookup(environment_id, FR_LUT, light_id, light_vector, half_vector);
+	}
+	
+	if (fresnel_output1 == 1u) {
+		diffuse_sum.a = fresnel_factor;
+	}
+
+	if (fresnel_output2 == 1u) {
+		specular_sum.a = fresnel_factor;
+	}
+
+	uint GPUREG_LIGHTING_AMBIENT = readPicaReg(0x01C0u);
 	vec4 global_ambient = vec4(regToColor(GPUREG_LIGHTING_AMBIENT), 1.0);
 	primary_color = clamp(global_ambient + diffuse_sum, vec4(0.0), vec4(1.0));
 	secondary_color = clamp(specular_sum, vec4(0.0), vec4(1.0));
