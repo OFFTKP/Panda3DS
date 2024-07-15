@@ -164,6 +164,7 @@ uint GPUREG_LIGHTING_CONFIG1;
 uint GPUREG_LIGHTING_LUTINPUT_SELECT;
 uint GPUREG_LIGHTING_LUTINPUT_SCALE;
 uint GPUREG_LIGHTING_LUTINPUT_ABS;
+uint GPUREG_LIGHTi_CONFIG;
 bool error_unimpl;
 vec4 unimpl_color;
 
@@ -304,6 +305,7 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 	}
 
 	if (bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_ABS, 1 + 4 * int(lut_id), 1) == 0u) {
+		delta = abs(delta);
 		int index = int(clamp(floor(delta * 255.0), 0.f, 255.f));
 		return lutLookup(lut_index, index);
 	} else {
@@ -360,7 +362,7 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		uint GPUREG_LIGHTi_AMBIENT = readPicaReg(0x0143u + 0x10u * light_id);
 		uint GPUREG_LIGHTi_VECTOR_LOW = readPicaReg(0x0144u + 0x10u * light_id);
 		uint GPUREG_LIGHTi_VECTOR_HIGH = readPicaReg(0x0145u + 0x10u * light_id);
-		uint GPUREG_LIGHTi_CONFIG = readPicaReg(0x0149u + 0x10u * light_id);
+		GPUREG_LIGHTi_CONFIG = readPicaReg(0x0149u + 0x10u * light_id);
 
 		vec3 light_vector = normalize(vec3(
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 0, 16), 5u, 10u), decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 16, 16), 5u, 10u),
