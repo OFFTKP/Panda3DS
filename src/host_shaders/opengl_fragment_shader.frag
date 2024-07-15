@@ -364,17 +364,16 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		uint GPUREG_LIGHTi_VECTOR_HIGH = readPicaReg(0x0145u + 0x10u * light_id);
 		GPUREG_LIGHTi_CONFIG = readPicaReg(0x0149u + 0x10u * light_id);
 
-		vec3 light_position = normalize(vec3(
+		vec3 light_position = vec3(
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 0, 16), 5u, 10u), decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_LOW, 16, 16), 5u, 10u),
 			decodeFP(bitfieldExtract(GPUREG_LIGHTi_VECTOR_HIGH, 0, 16), 5u, 10u)
-		));
+		);
 		vec3 light_vector;
-
 		vec3 half_vector;
 
 		// Positional Light
 		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 0, 1) == 0u) {
-			light_vector = normalize(light_position + v_view);
+			light_vector = light_position + v_view;
 			half_vector = light_vector + view;
 		}
 
@@ -382,8 +381,10 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		else {
 			light_vector = light_position;
 			half_vector = light_vector + view;
-			// half_vector = normalize(normalize(light_vector) + view);
 		}
+
+		float light_distance = length(light_vector);
+		light_vector = normalize(light_vector);
 
 		float NdotL = dot(normal, light_vector);  // N dot Li
 
@@ -393,9 +394,27 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		else
 			NdotL = abs(NdotL);
 
+		// Distance attenuation is computed differently from the other LUTs, for example
+		// it doesn't store its scale in GPUREG_LIGHTING_LUTINPUT_SCALE and it doesn't use 
+		// GPUREG_LIGHTING_LUTINPUT_SELECT. Instead, it uses the distance from the light to the
+		// fragment and the distance attenuation scale and bias to calculate where in the LUT to look up.
+		// See: https://www.3dbrew.org/wiki/GPU/Internal_Registers#GPUREG_LIGHTi_ATTENUATION_SCALE
+		float distance_attenuation = 1.0;
+		if (bitfieldExtract(GPUREG_LIGHTING_CONFIG1, 24 + int(light_id), 1) == 0u) {
+			uint GPUREG_LIGHTi_ATTENUATION_BIAS = bitfieldExtract(readPicaReg(0x014Au), 0, 20);
+			uint GPUREG_LIGHTi_ATTENUATION_SCALE = bitfieldExtract(readPicaReg(0x014Bu), 0, 20);
+
+			float distance_attenuation_bias = decodeFP(GPUREG_LIGHTi_ATTENUATION_BIAS, 7u, 12u);
+			float distance_attenuation_scale = decodeFP(GPUREG_LIGHTi_ATTENUATION_SCALE, 7u, 12u);
+
+			float delta = light_distance * distance_attenuation_scale + distance_attenuation_bias;
+			delta = clamp(delta, 0.0, 1.0);
+			int index = int(clamp(floor(delta * 255.0), 0.0, 255.0));
+			distance_attenuation = lutLookup(16u + light_id, index);
+		}
+
 		uint environment_id = bitfieldExtract(GPUREG_LIGHTING_CONFIG0, 4, 4);
 		float spotlight_attenuation = lightLutLookup(environment_id, SP_LUT, light_id, normal, view, light_vector, half_vector);
-		float distance_attenuation = 1.0;
 		float specular0_distribution = lightLutLookup(environment_id, D0_LUT, light_id, normal, view, light_vector, half_vector);
 		float specular1_distribution = lightLutLookup(environment_id, D1_LUT, light_id, normal, view, light_vector, half_vector);
 		vec3 reflected_color;
