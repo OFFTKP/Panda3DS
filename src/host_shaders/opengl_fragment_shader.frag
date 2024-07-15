@@ -265,11 +265,11 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 	uint input_id = bitfieldExtract(GPUREG_LIGHTING_LUTINPUT_SELECT, int(lut_id) * 4, 3);
 	switch (input_id) {
 		case 0u: {
-			delta = dot(normal, half_vector);
+			delta = dot(normal, normalize(half_vector));
 			break;
 		}
 		case 1u: {
-			delta = dot(view, half_vector);
+			delta = dot(view, normalize(half_vector));
 			break;
 		}
 		case 2u: {
@@ -289,7 +289,7 @@ float lightLutLookup(uint environment_id, uint lut_id, uint light_id, vec3 norma
 			float y = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_LOW, 16, 13));
 			float z = fixed1_1_11ToFloat(bitfieldExtract(GPUREG_LIGHTi_SPOTDIR_HIGH, 0, 13));
 			vec3 spotlight_vector = normalize(vec3(x, y, z));
-			delta = dot(-light_vector, spotlight_vector);  // -L dot P (aka Spotlight aka SP);
+			delta = dot(light_vector, spotlight_vector);
 			break;
 		}
 		case 5u: {
