@@ -374,13 +374,13 @@ void calcLighting(out vec4 primary_color, out vec4 secondary_color) {
 		// Positional Light
 		if (bitfieldExtract(GPUREG_LIGHTi_CONFIG, 0, 1) == 0u) {
 			light_vector = light_position + v_view;
-			half_vector = light_vector + view;
+			half_vector = normalize(light_vector) + view;
 		}
 
 		// Directional light
 		else {
 			light_vector = light_position;
-			half_vector = light_vector + view;
+			half_vector = normalize(light_vector) + view;
 		}
 
 		float light_distance = length(light_vector);
