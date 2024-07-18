@@ -22,6 +22,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 if(APPLE)
     enable_language(OBJC)
+    if (IOS)
+        set_source_files_properties(src/miniaudio.c PROPERTIES LANGUAGE OBJC)
+    endif()
 endif()
 
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
@@ -173,7 +176,7 @@ set(SOURCE_FILES src/emulator.cpp src/io_file.cpp src/config.cpp
                  src/core/CPU/cpu_dynarmic.cpp src/core/CPU/dynarmic_cycles.cpp
                  src/core/memory.cpp src/renderer.cpp src/core/renderer_null/renderer_null.cpp
                  src/http_server.cpp src/stb_image_write.c src/core/cheats.cpp src/core/action_replay.cpp
-                 src/discord_rpc.cpp src/lua.cpp src/memory_mapped_file.cpp src/miniaudio.cpp
+                 src/discord_rpc.cpp src/lua.cpp src/memory_mapped_file.cpp src/miniaudio.c
 )
 set(CRYPTO_SOURCE_FILES src/core/crypto/aes_engine.cpp)
 set(KERNEL_SOURCE_FILES src/core/kernel/kernel.cpp src/core/kernel/resource_limits.cpp
